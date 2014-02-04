@@ -1,3 +1,7 @@
-DAT210-projekt
+DAT210-prosjekt
 ==============
-hmmmmmm
+```java
+public void bane(int lolkekbur) {
+	System.out.println("javaesnytacks"); // kommetns
+}
+```
