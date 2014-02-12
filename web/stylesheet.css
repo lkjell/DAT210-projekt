@@ -1,0 +1,70 @@
+/** {
+	border: 1px solid black;
+}*/
+/*Fjern kommentar for å se border rundt alle objekt/skjelettvisning */
+
+.pagecontainer {
+	width:1280px;
+ 	height:801px;
+ 	margin: 20px auto;
+ 	border: 1px solid black;
+ 	border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+ 	box-shadow: 0px 2px 5px black;
+    -moz-box-shadow: 0px 2px 5px black;
+    -webkit-box-shadow: 0px 2px 5px black;
+}
+
+.header, .body, .footer, .left, .right, .filter {
+	padding:5px;
+}
+
+.header {
+	height: 40px;
+	border-bottom: 1px solid black;
+	border-top-right-radius: 10px;
+	border-top-left-radius: 10px;
+	background-color: whiteSmoke;
+}
+
+.body {
+	height: 690px;
+}
+
+.footer {
+	height: 40px;
+	border-top: 1px solid black;
+	border-bottom-right-radius: 10px;
+	border-bottom-left-radius: 10px;
+	background-color: whiteSmoke;
+}
+
+.left {
+	width: 800px;
+	height: 680px;
+	border-right: 1px solid black;
+	float:left;
+}
+
+.filter {
+	margin-bottom: 10px;
+	width:780px;
+	height:20px;
+	float:left;
+	border: 1px solid black;
+}
+
+.images {
+	overflow: auto;
+	width:790px;
+	height: 630px;
+}
+
+.right {
+	width:440px;
+	height:680px;
+	border-left: 1px solid black;
+	float:right;
+}
+
