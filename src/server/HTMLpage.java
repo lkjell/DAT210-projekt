@@ -21,9 +21,9 @@ public class HTMLpage {
 		// separate these later
 		try {
 			Path path = Paths.get(HTMLpage.class.getResource("HTMLpage.class")
-				.toURI()).getParent().getParent();
+				.toURI()).getParent().getParent().getParent();
 			System.out.println(path); // DEBUG LOG
-			path = path.resolve("index.html");
+			path = path.resolve("web/index.html");
 			System.out.println(path); // DEBUG LOG
 			byte[] encoded = Files.readAllBytes(path);
 			page = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(encoded)).toString();
