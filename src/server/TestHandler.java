@@ -1,5 +1,5 @@
 
-package package1;
+package server;
 
 import java.io.IOException;
 
@@ -16,6 +16,6 @@ class TestHandler extends AbstractHandler {
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
-        response.getWriter().println("<h1>HERP DERP das it WERK?</h1>");
+        response.getWriter().println(new HTMLpage().page);
     }
 }
