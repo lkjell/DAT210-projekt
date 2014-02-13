@@ -28,6 +28,25 @@
 	background-color: whiteSmoke;
 }
 
+.toolbar {
+	list-style: none;
+	padding: 0;
+	margin:0;
+}
+
+	.toolbar li {
+		margin:0;
+		padding:10px;
+		display: inline-block;
+		float:left;
+		font-size: 15px;
+		background-color: white;
+	}
+
+		.toolbar li:hover {
+			background-color: whiteSmoke;
+		}
+
 .body {
 	height: 690px;
 }
@@ -64,7 +83,6 @@
 .right {
 	width:440px;
 	height:680px;
-	border-left: 1px solid black;
 	float:right;
 }
 
