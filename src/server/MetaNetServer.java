@@ -25,7 +25,7 @@ public class MetaNetServer extends Server {
 	    resource_handler.setWelcomeFiles( new String[] { cnfg.getWebIndex() });
 	    resource_handler.setResourceBase( "." );
 	    HandlerList handlers = new HandlerList();
-	    handlers.setHandlers( new Handler[] { resource_handler, new DefaultHandler() });
+	    handlers.setHandlers( new Handler[] { new RequestFilename(), resource_handler, new DefaultHandler() });
 	    this.setHandler( handlers );
 		ServerTrayIcon.make( this );
 	    try {
