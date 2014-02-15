@@ -7,9 +7,7 @@ public class Main {
 		TestServer server = new TestServer();
 		server.start();
 		server.join();
-		/*
-		 * burde kanskje legge inn vent 10 min så:
-		 * server.stop();
-		 */
+		System.out.println( "Continued main thread. Exiting gracefully." );
+		System.exit(0); // exit gracefully
 	}
 }
