@@ -16,10 +16,13 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 
 public class MetaNetServer extends Server {
-
+	
+	int port;
+	
  	public MetaNetServer( Config cnfg ) throws Exception {
  		
  		super( cnfg.getPort() );
+ 		port = cnfg.getPort();
 	    ResourceHandler resource_handler = new ResourceHandler();
 	    resource_handler.setDirectoriesListed( true );
 	    resource_handler.setWelcomeFiles( new String[] { cnfg.getWebIndex() });
@@ -34,7 +37,7 @@ public class MetaNetServer extends Server {
 		}
 		catch ( BindException e ) {
 			JOptionPane.showMessageDialog( new JFrame(),
-				"A process is already listening on port "+ cnfg.getPort() );
+				"A process is already listening on port "+ port );
 		}
  	}
  }
