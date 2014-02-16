@@ -4,16 +4,13 @@
 
 package server;
 
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 
 public class TestServer extends Server {
 	
 	public TestServer() {
 		super(8080);
+<<<<<<< HEAD
 <<<<<<< HEAD
         ResourceHandler resource_handler = new ResourceHandler();
         resource_handler.setDirectoriesListed(true);
@@ -39,5 +36,8 @@ public class TestServer extends Server {
 		this.setHandler(new TestHandler());
 		ServerTrayIcon.make(this);
 >>>>>>> 3bfade2dae7bd2471c0631ffdc7bdbe1490f82d4
+=======
+		this.setHandler(new TestHandler());
+>>>>>>> parent of 9f66c2a... bildene komme ihvertfall opp ;)
 	}
 }
