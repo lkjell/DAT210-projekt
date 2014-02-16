@@ -30,4 +30,7 @@ public class Config {
 	public void setSection( String name ) {
 		section = ini.get( name );
 	}
+	
+	public int getPort() { return getInt( "port" ); }
+	public String getWebIndex() { return section.get( "webindex" ); }
 }
