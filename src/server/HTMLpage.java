@@ -20,14 +20,15 @@ public class HTMLpage {
 	public HTMLpage() {
 		// separate these later
 		try {
-			Path path = Paths.get(HTMLpage.class.getResource("HTMLpage.class")
-				.toURI()).getParent().getParent().getParent();
+			// This code works with exported jar file
+			Path path = Paths.get(ClassLoader.getSystemClassLoader().getResource(".").toURI());
+			// This code works with class files
+			path = path.getParent();
 			System.out.println(path); // DEBUG LOG
 			path = path.resolve("web/index.html");
 			System.out.println(path); // DEBUG LOG
 			byte[] encoded = Files.readAllBytes(path);
 			page = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(encoded)).toString();
-			System.out.println(page); // DEBUG LOG
 		} catch (URISyntaxException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
