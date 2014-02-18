@@ -94,7 +94,7 @@
 	.images li {
 		margin:10px;
 		width: 120px;
-		height: auto;
+		height: 120px;
 		position: relative;
 	}
 
@@ -118,7 +118,7 @@
 .image {
 	width:  150px;
 	height: 150px;
-	border: 1px solid gray;
+	/*border: 1px solid gray;*/
 	float:  left;
 	list-style-type: none;
 	margin: 0;
