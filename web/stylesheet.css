@@ -94,7 +94,7 @@
 	.images li {
 		margin:10px;
 		width: 120px;
-		height: 120px;
+		height: auto;
 		position: relative;
 	}
 
@@ -107,12 +107,12 @@
 		.images li img {
 			display: block;
 			width: 120px;
-			height: 120px;
+			height: auto;
 		}
 
 		.images li img:hover {
 			width: 200px;
-			height: 200px;
+			height: auto;
 		}
 
 .image {
