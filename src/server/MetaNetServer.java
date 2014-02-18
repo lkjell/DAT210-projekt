@@ -33,13 +33,16 @@ public class MetaNetServer extends Server {
  		
  		super( cnfg.getPort() );
  		port = cnfg.getPort();
+ 		
 	    ResourceHandler resource_handler = new ResourceHandler();
 	    resource_handler.setDirectoriesListed( true );
 	    resource_handler.setWelcomeFiles( new String[] { cnfg.getWebIndex() });
 	    resource_handler.setResourceBase( "." );
 	    HandlerList handlers = new HandlerList();
-	    handlers.setHandlers( new Handler[] { new RequestFilename(), resource_handler, new DefaultHandler() });
+	    handlers.setHandlers( new Handler[] { new HTMLhandler( cnfg.getWebIndex() ),
+	    		/*new RequestFilename(),*/ resource_handler, new DefaultHandler() });
 	    this.setHandler( handlers );
+	    
 		ServerTrayIcon.make( this );
 	    try {
 			this.start(); // Attempt to bind server to given port
@@ -58,12 +61,17 @@ class HTMLhandler extends AbstractHandler {
  		public HTMLhandler( String path ) { this.path = path; }
  		
  		private String editHTML() throws IOException {
+ 			
+ 			File dir = new File("img/");
+ 			String[] list_of_files = dir.list();
+ 			
  	 		Document doc = Jsoup.parse( new File( path ), "utf-8" );
  	 		Element images = doc.getElementsByClass( "images" ).first();
  	 		
- 	 		// for each picture
- 	 		images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
- 	 		.appendElement( "img" ).attr( "src", "newimage.jpg" ).attr( "alt", "Request did not succeed" );
+ 	 		for ( String filename: list_of_files ) {
+ 	 			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
+ 	 					.appendElement( "img" ).attr( "src", "img/"+ filename ).attr( "alt", "Request did not succeed" );
+ 	 		}
  	 		
  	 		//System.out.println(images);
  	 		return doc.toString();
