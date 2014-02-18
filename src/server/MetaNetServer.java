@@ -4,16 +4,26 @@
 
 package server;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.BindException;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 public class MetaNetServer extends Server {
 	
@@ -38,6 +48,48 @@ public class MetaNetServer extends Server {
 		catch ( BindException e ) {
 			JOptionPane.showMessageDialog( new JFrame(),
 				"A process is already listening on port "+ port );
+		}
+ 	}
+ 	
+class HTMLhandler extends AbstractHandler {
+ 		
+ 		String path;
+ 		
+ 		public HTMLhandler( String path ) { this.path = path; }
+ 		
+ 		private String editHTML() throws IOException {
+ 	 		Document doc = Jsoup.parse( new File( path ), "utf-8" );
+ 	 		Element images = doc.getElementsByClass( "images" ).first();
+ 	 		
+ 	 		// for each picture
+ 	 		images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
+ 	 		.appendElement( "img" ).attr( "src", "newimage.jpg" ).attr( "alt", "Request did not succeed" );
+ 	 		
+ 	 		//System.out.println(images);
+ 	 		return doc.toString();
+ 	 	}
+ 		
+		@Override
+		public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
+		        throws IOException, ServletException {
+			
+			// Hvis ikke første request, send til neste handler.
+			if ( !baseRequest.getRequestURI().equals( "/" )) {
+				 baseRequest.setHandled(false);
+				 return;
+			}
+//			Enumeration<String> headers = baseRequest.getHeaderNames();
+//			System.out.println( "Headers:" );
+//			for ( String s: Collections.list(headers) ) {
+//				String v = baseRequest.getHeader( s );
+//				System.out.println(s+" : "+v);
+//			}
+//			System.out.println(baseRequest.getRequestURI());
+
+		    response.setContentType("text/html;charset=utf-8");
+		    response.setStatus(HttpServletResponse.SC_OK);
+		    baseRequest.setHandled(true);
+		    response.getWriter().println( editHTML() );
 		}
  	}
  }
