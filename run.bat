@@ -1,1 +1,1 @@
-start javaw -jar server.jar
+start javaw -jar metanet-0.0.1.jar
