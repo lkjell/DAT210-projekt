@@ -7,6 +7,8 @@ package server;
 import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -63,14 +65,27 @@ class HTMLhandler extends AbstractHandler {
  		private String editHTML() throws IOException {
  			
  			File dir = new File("img/");
- 			String[] list_of_files = dir.list();
+ 			//String[] list_of_files = dir.list();
+ 			List<File> list_of_files = new LinkedList<File>();
+ 			
+ 			/* Should use recursive? */
+ 			for(File file:dir.listFiles()) {
+ 				if(file.isFile()) {
+ 					list_of_files.add(file);
+ 				} else if(file.isDirectory()) {
+ 					for (File subfile:file.listFiles()) {
+ 						if(subfile.isFile())
+ 							list_of_files.add(subfile);
+ 					}
+ 				}
+ 			}
  			
  	 		Document doc = Jsoup.parse( new File( path ), "utf-8" );
  	 		Element images = doc.getElementsByClass( "images" ).first();
  	 		
- 	 		for ( String filename: list_of_files ) {
+ 	 		for ( File filename: list_of_files ) {
  	 			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
- 	 					.appendElement( "img" ).attr( "src", "img/"+ filename ).attr( "alt", "Request did not succeed" );
+ 	 					.appendElement( "img" ).attr( "src", filename.getPath() ).attr( "alt", "Request did not succeed" );
  	 		}
  	 		
  	 		//System.out.println(images);
@@ -81,7 +96,7 @@ class HTMLhandler extends AbstractHandler {
 		public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
 		        throws IOException, ServletException {
 			
-			// Hvis ikke første request, send til neste handler.
+			// Hvis ikke fï¿½rste request, send til neste handler.
 			if ( !baseRequest.getRequestURI().equals( "/" )) {
 				 baseRequest.setHandled(false);
 				 return;
