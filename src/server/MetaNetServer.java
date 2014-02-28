@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.apache.commons.imaging.ImageReadException;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -80,12 +81,20 @@ class HTMLhandler extends AbstractHandler {
  				}
  			}
  			
+ 			// Leser foerste filen i rekka og printer ut metadata
+ 			try {
+				MetadataExample.read( list_of_files.get(0) );
+			} catch (ImageReadException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+ 			
  	 		Document doc = Jsoup.parse( new File( path ), "utf-8" );
  	 		Element images = doc.getElementsByClass( "images" ).first();
  	 		
- 	 		for ( File filename: list_of_files ) {
+ 	 		for ( File file: list_of_files ) {
  	 			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
- 	 					.appendElement( "img" ).attr( "src", filename.getPath() ).attr( "alt", "Request did not succeed" );
+ 	 					.appendElement( "img" ).attr( "src", file.getPath().replace("\\", "/")).attr( "alt", "Request did not succeed" );
  	 		}
  	 		
  	 		//System.out.println(images);
@@ -96,7 +105,7 @@ class HTMLhandler extends AbstractHandler {
 		public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
 		        throws IOException, ServletException {
 			
-			// Hvis ikke fï¿½rste request, send til neste handler.
+			// Hvis ikke første request, send til neste handler.
 			if ( !baseRequest.getRequestURI().equals( "/" )) {
 				 baseRequest.setHandled(false);
 				 return;
