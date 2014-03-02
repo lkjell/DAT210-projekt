@@ -16,7 +16,10 @@ import java.net.URI;
 
 public class ServerTrayIcon {
 	
-	public static boolean make( MetaNetServer server ) {
+	private SystemTray tray;
+	private TrayIcon   icon;
+	
+	public ServerTrayIcon(MetaNetServer server) throws NotSupportedException {
 		if ( SystemTray.isSupported() ) {
 			BufferedImage img = new BufferedImage( 16, 16, BufferedImage.TYPE_3BYTE_BGR );
 			Graphics2D g = img.createGraphics();
@@ -42,18 +45,20 @@ public class ServerTrayIcon {
 			icon.setPopupMenu( menu );
 			icon.setToolTip( "MetaNet" );
 			//icon.addMouseListener( new LsnMouse( server ));
-			try { SystemTray.getSystemTray().add( icon ); }
-			catch ( AWTException e ) { e.printStackTrace();	}
-			return true;
-		} else return false;
+			tray = SystemTray.getSystemTray();
+			try { tray.add( icon ); }
+			catch ( AWTException e ) { throw new NotSupportedException(); }
+		} else throw new NotSupportedException();
 	}
+	
+	public void remove() { tray.remove(icon); }
 	
 	static class LsnBrowse implements ActionListener {
 		
 		URI uri;
 		
 		public LsnBrowse( MetaNetServer server ) {
-			this.uri = URI.create( "http://127.0.0.1:"+ server.port );
+			this.uri = URI.create( "http://127.0.0.1:"+ server.cnfg.port );
 		}
 		
 		@Override
@@ -75,4 +80,7 @@ public class ServerTrayIcon {
 			catch ( Exception e ) { e.printStackTrace(); }
 		}
 	}
+
+	@SuppressWarnings("serial")
+	private class NotSupportedException extends Exception{} 
 }

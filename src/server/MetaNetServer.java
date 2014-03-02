@@ -4,124 +4,68 @@
 
 package server;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.BindException;
-import java.util.LinkedList;
-import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import org.apache.commons.imaging.ImageReadException;
+import org.eclipse.jetty.server.Connector;
+//import org.apache.commons.imaging.ImageReadException;
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 public class MetaNetServer extends Server {
 	
-	int port;
+	public static final int DEFAULT_PORT = 8080;
+	Config cnfg;
+	ServerTrayIcon trayicon;
 	
  	public MetaNetServer( Config cnfg ) throws Exception {
+ 		this.cnfg = cnfg;
+ 		ServerConnector connector = new ServerConnector( this );
+ 		connector.setPort( cnfg.port );
+ 		this.setConnectors( new Connector[]{ connector });
  		
- 		super( cnfg.getPort() );
- 		port = cnfg.getPort();
- 		
-	    ResourceHandler resource_handler = new ResourceHandler();
-	    resource_handler.setDirectoriesListed( true );
-	    resource_handler.setWelcomeFiles( new String[] { cnfg.getWebIndex() });
-	    resource_handler.setResourceBase( "." );
+	    ResourceHandler rh0 = new ResourceHandler();
+	    rh0.setDirectoriesListed( true );
+	    rh0.setWelcomeFiles( new String[] { cnfg.webIndex });
+	    rh0.setResourceBase( cnfg.webDir );
 	    HandlerList handlers = new HandlerList();
-	    handlers.setHandlers( new Handler[] { new HTMLhandler( cnfg.getWebIndex() ),
-	    		/*new RequestFilename(),*/ resource_handler, new DefaultHandler() });
-	    this.setHandler( handlers );
+	    handlers.setHandlers( new Handler[] {
+	    		new HandlerHTML( "web/index.html" ), rh0, new DefaultHandler() });
+	    ContextHandler ch0 = new ContextHandler();
+	    ch0.setContextPath( "/" );
+	    ch0.setHandler( handlers );
 	    
-		ServerTrayIcon.make( this );
+	    ResourceHandler rh1 = new ResourceHandler();
+	    rh1.setResourceBase( "./img" ); //TODO: Replace with query to database to get specific image path
+	    ContextHandler ch1 = new ContextHandler();
+	    ch1.setContextPath( "/img" );
+	    ch1.setHandler( rh1 );
+	    
+	    ContextHandler ch2 = new ContextHandler();
+	    ch2.setContextPath( "/getTags" );
+	    ch2.setHandler( new HandlerMetadataRequest() );
+	    
+	    ContextHandlerCollection contexts = new ContextHandlerCollection();
+	    contexts.setHandlers( new Handler[]{ ch0, ch1, ch2 });
+	    this.setHandler( contexts );
+	    
+		trayicon = new ServerTrayIcon( this );
+		
 	    try {
 			this.start(); // Attempt to bind server to given port
 		    this.join();  // Pause this thread while server runs
 		}
 		catch ( BindException e ) {
 			JOptionPane.showMessageDialog( new JFrame(),
-				"A process is already listening on port "+ port );
-		}
- 	}
- 	
-class HTMLhandler extends AbstractHandler {
- 		
- 		String path;
- 		
- 		public HTMLhandler( String path ) { this.path = path; }
- 		
- 		private String editHTML() throws IOException {
- 			
- 			File dir = new File("img/");
- 			//String[] list_of_files = dir.list();
- 			List<File> list_of_files = new LinkedList<File>();
- 			
- 			/* Should use recursive? */
- 			for(File file:dir.listFiles()) {
- 				if(file.isFile()) {
- 					list_of_files.add(file);
- 				} else if(file.isDirectory()) {
- 					for (File subfile:file.listFiles()) {
- 						if(subfile.isFile())
- 							list_of_files.add(subfile);
- 					}
- 				}
- 			}
- 			
- 			// Leser foerste filen i rekka og printer ut metadata
- 			try {
-				MetadataExample.read( list_of_files.get(0) );
-			} catch (ImageReadException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
- 			
- 	 		Document doc = Jsoup.parse( new File( path ), "utf-8" );
- 	 		Element images = doc.getElementsByClass( "images" ).first();
- 	 		
- 	 		for ( File file: list_of_files ) {
- 	 			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", "someNumber" )
- 	 					.appendElement( "img" ).attr( "src", file.getPath().replace("\\", "/")).attr( "alt", "Request did not succeed" );
- 	 		}
- 	 		
- 	 		//System.out.println(images);
- 	 		return doc.toString();
- 	 	}
- 		
-		@Override
-		public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
-		        throws IOException, ServletException {
-			
-			// Hvis ikke første request, send til neste handler.
-			if ( !baseRequest.getRequestURI().equals( "/" )) {
-				 baseRequest.setHandled(false);
-				 return;
-			}
-//			Enumeration<String> headers = baseRequest.getHeaderNames();
-//			System.out.println( "Headers:" );
-//			for ( String s: Collections.list(headers) ) {
-//				String v = baseRequest.getHeader( s );
-//				System.out.println(s+" : "+v);
-//			}
-//			System.out.println(baseRequest.getRequestURI());
-
-		    response.setContentType("text/html;charset=utf-8");
-		    response.setStatus(HttpServletResponse.SC_OK);
-		    baseRequest.setHandled(true);
-		    response.getWriter().println( editHTML() );
+				"A process is already listening on port "+ cnfg.port );
 		}
  	}
  }
