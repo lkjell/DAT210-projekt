@@ -1,6 +1,6 @@
-$( function() {
-$('body').append('<div id="largeImgPanel" onclick="hideMe(this);"><img id="largeImg" style="height: 100%; margin: 0; padding: 0;" /></div>');
-});
+// $( function() {
+// $('body').append('<div id="largeImgPanel" onclick="hideMe(this);"><img id="largeImg" style="height: 100%; margin: 0; padding: 0;" /></div>');
+// });
 
 $( function() {
 	$( ".image" ).draggable({
@@ -23,12 +23,22 @@ $( function() {
 			unselectAll();
 			//alert(imgSource);
 		}
-		
 	);
+	
+	$( ".largeImgPanel" ).click(
+		function() {
+		document.getElementById('largeImgPanel').style.visibility = 'hidden';
+		});
+
+
 	
 });
 
 //alert("test") kontrol + q for comment
+
+			// function hideLargeImagePanel() {
+            // document.getElementById('largeImgPanel').style.visibility = 'hidden';
+            // }
 
             function showLargeImagePanel() {
             document.getElementById('largeImgPanel').style.visibility = 'visible';
