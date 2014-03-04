@@ -131,3 +131,18 @@
 	float:  right;
 	position: relative;
 }
+
+.largeImgPanel {
+	position: absolute;
+	height: 100%;
+	z-index: 5;
+}
+
+.largeImg {
+	margin: 0;
+	padding: 0;
+}
+/*
+* {
+	border: 1px dashed blue;
+}*/
