@@ -143,10 +143,10 @@
                 top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(100,100,100, 0.5);
             }
-
-
-
-
-
-
-
+.button {
+    display: block;
+    height: 100px;
+    width: 300px;
+    background: #34696f;
+    border: 2px solid rgba(33, 68, 72, 0.59);
+}

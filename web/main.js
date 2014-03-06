@@ -21,23 +21,29 @@ $( function() {
 			document.getElementById('largeImg').src = imgSource; 
 			showLargeImagePanel();
 			unselectAll();
+
 			//alert(imgSource);
 		}
 		
 	);
 	
 });
+document.getElementById('button').style.visibility='hidden';
 
-//alert("test") kontrol + q for comment
+            function skjulKnappene() {
+            	document.getElementById('button').style.visibility='hidden';
+            }
 
             function showLargeImagePanel() {
-            document.getElementById('largeImgPanel').style.visibility = 'visible';
-			
+            	document.getElementById('largeImgPanel').style.visibility = 'visible';
+            	document.getElementById('button').style.visibility='visible';
             }
+
             function unselectAll() {
                 if(document.selection) document.selection.empty();
                 if(window.getSelection) window.getSelection().removeAllRanges();
             }
+
             function hideMe(obj) {
                 obj.style.visibility = 'hidden';
             }
