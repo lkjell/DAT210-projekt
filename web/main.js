@@ -23,46 +23,61 @@ function requestMetadata( file ) {
 	console.log("ajax request "+ file);
 	$.ajax({
 		url: "getTags/"+ file,
+		dataType: 'json',
 		success: function( data, status, xhr ) {
-			accordion = $('<div>');
-			//recursive(accordion, data);
-
-			$.map(data[0], function(value, key) {
-				h3 = $( '<h3>' ).text( key );
-				string = "";
-				for ( var i=0; i < value.length; i++ ) {
-					string += value;
-				}
-				sub = $('<div>').text( string );
-				console.log( $('<div>').append(sub).html() );
-				//text += key + ": "
-				accordion.append( h3, sub );
+			dom = $('<div>');
+			recursive(dom, data);
+			dom.accordion({
+				heightStyle: "content"
 			});
-
-			$( ".right" ).append( accordion );
+//			$.map(data[0], function(value, key) {
+//				h3 = $( '<h3>' ).text( key );
+//				string = "";
+//				for ( var i=0; i < value.length; i++ ) {
+//					string += value;
+//				}
+//				sub = $('<div>').text( string );
+//				console.log( $('<div>').append(sub).html() );
+//				//text += key + ": "
+//				accordion.append( h3, sub );
+//			});
+//
+//			$( ".right" ).append( accordion );
 		},
 		error: function( xhr, status, error ) {
 			alert( status +"\n"+ error );
 		}
 	});
 
-	// function recursive(dom, root) {
-	// 	$.map(root, function(value, key) {
-	// 		h3 = $( '<h3>', key );
-	// 		for ( i=0; i < value.length; i++ ) {
-	// 			if (i == 0 && value[0] != null) {
-	// 				$.map(root, function(value, key) {
-						
-	// 				});
-	// 			}
-	// 			if value instanceof Object recursive(dom, value);
-	// 		}
+	function recursive(dom, data) {
+
+		$.map(data, function(value, key) {
+					console.log( "key; " + key );
+			h3 = $( '<h3>' ).text( key );
+			sub = $('<div>');
+			for ( var i = 0; i < value.length; i++ ) {
+				if( i === 0 ){
+					if ( value[i] === null ) { continue;	}
+					ul = $('<ul>')
+					$.map(value[0], function(helvette, faen){
+						//console.log( faen + ":" + helvette );
+						ul.append( $('<li>').text( faen + ":" + helvette ));
+					});
+					//console.log( $('<div>').append(ul).html() );
+					sub.html( ul );
+					console.log( $('<div>').append(sub).html() );
+					break;
+				}
+				recursive(dom, value[i]);
+			}
 			
-	// 		sub = $('<div>', text );
-	// 		//text += key + ": "
-	// 		accordion.append( h3, sub )
-	// 	});
-	// }
+			//console.log( $('<div>').append(sub).html() );
+			//text += key + ": "
+			dom.append( h3, sub );
+		});
+		console.log("fuck you");
+		$( ".right" ).html( dom );
+	}
 }
 
 function showLargeImagePanel() {

@@ -142,6 +142,15 @@
 	margin: 0;
 	padding: 0;
 }
+
+.ui-accordion-header {
+	background-color:#F0F
+}
+
+li {
+	color: #EE86E7
+}
+
 /*
 * {
 	border: 1px dashed blue;

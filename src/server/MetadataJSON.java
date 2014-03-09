@@ -51,7 +51,7 @@ public class MetadataJSON {
                 // read metadata of first image
                 IIOMetadata metadata = reader.getImageMetadata(0);
                 
-                json.append( "[" );
+                json.append( "{" );
 
                 String[] names = metadata.getMetadataFormatNames();
                 int length = names.length;
@@ -60,7 +60,7 @@ public class MetadataJSON {
                     json.append( displayMetadata( metadata.getAsTree( names[i] )));
                 }
 
-                json.append( "]" );
+                json.append( "}" );
             }
             
         }
@@ -79,8 +79,8 @@ public class MetadataJSON {
     String displayMetadata(Node node, int level) {
         // print open tag of element
         StringBuilder sb = new StringBuilder();
-        indent(sb, level);
-        sb.append( "{ \""+ node.getNodeName() +"\": [\n" );
+        //indent(sb, level);
+        sb.append( "\""+ node.getNodeName() +"\": [\n" );
         indent(sb, level +1);
         NamedNodeMap map = node.getAttributes();
         if (map != null && map.getLength() != 0) {
@@ -96,6 +96,7 @@ public class MetadataJSON {
                 String nodeValue = attr.getNodeValue();
                 try {
                 	Double.parseDouble(nodeValue);
+                	if ( nodeValue.equals( "NaN" ) || nodeValue.equals( "Infinity" )) throw new NumberFormatException();
                 	val = nodeValue;
                 } catch(NumberFormatException e) {
                 	//System.out.println("wat? "+ nodeValue);
@@ -111,14 +112,17 @@ public class MetadataJSON {
         Node child = node.getFirstChild();
         while (child != null) {
             // print children recursively
-            sb.append( ",\n"+ displayMetadata(child, level + 1) );
+        	sb.append( ",\n");
+            indent(sb, level +1);
+            sb.append( "{"+ displayMetadata(child, level + 1) +"}" );
             child = child.getNextSibling();
         }
 
         sb.append("\n");
         // print close tag of element
         indent(sb, level);
-        sb.append("]}");
+        sb.append("]");
         return sb.toString();
     }
 }
+
