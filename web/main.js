@@ -19,20 +19,50 @@ $( function() {
 });
 
 function requestMetadata( file ) {
+
 	console.log("ajax request "+ file);
 	$.ajax({
 		url: "getTags/"+ file,
 		success: function( data, status, xhr ) {
-			text = "";
-			try{ text += "Filename: "+ data.filename }catch(e){}
-			try{ text += "<br/>Dimensions: "+ data.width +" x "+ data.height }catch(e){}
-			try{ text += "<br/>Keywords: "+ data.exif.keywords }catch(e){}
-			$( ".right" ).html( text );
+			accordion = $('<div>');
+			//recursive(accordion, data);
+
+			$.map(data[0], function(value, key) {
+				h3 = $( '<h3>' ).text( key );
+				string = "";
+				for ( var i=0; i < value.length; i++ ) {
+					string += value;
+				}
+				sub = $('<div>').text( string );
+				console.log( $('<div>').append(sub).html() );
+				//text += key + ": "
+				accordion.append( h3, sub );
+			});
+
+			$( ".right" ).append( accordion );
 		},
 		error: function( xhr, status, error ) {
 			alert( status +"\n"+ error );
 		}
 	});
+
+	// function recursive(dom, root) {
+	// 	$.map(root, function(value, key) {
+	// 		h3 = $( '<h3>', key );
+	// 		for ( i=0; i < value.length; i++ ) {
+	// 			if (i == 0 && value[0] != null) {
+	// 				$.map(root, function(value, key) {
+						
+	// 				});
+	// 			}
+	// 			if value instanceof Object recursive(dom, value);
+	// 		}
+			
+	// 		sub = $('<div>', text );
+	// 		//text += key + ": "
+	// 		accordion.append( h3, sub )
+	// 	});
+	// }
 }
 
 function showLargeImagePanel() {
