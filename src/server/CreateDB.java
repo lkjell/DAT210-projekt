@@ -13,31 +13,33 @@ public class CreateDB {
 		Class.forName(DRIVER);
 		Connection connection = DriverManager.getConnection(JDBC_URL);
 		connection.createStatement().execute("create table files("
-											+ "channel varchar(20), "
-											+ "topic varchar(20), "
-											+ "videoclip varchar(20))");
+											+ "File_ID int, "
+											+ "File_Title varchar(64),"
+											+ "primary key(File_ID)"
+											+ ")");
 		connection.createStatement().execute("insert into files values"
-											+ "('oodp', 'creational', 'singleton'),"
-											+ "('oodp', 'creational', 'factory method'),"
-											+ "('oodp', 'creational', 'abstract factory')");
-		
-		connection.createStatement().execute("create table relations("
-											+ "channel varchar(20), "
-											+ "topic varchar(20), "
-											+ "videoclip varchar(20))");
-		connection.createStatement().execute("insert into relations values"
-											+ "('oodp', 'creational', 'singleton'),"
-											+ "('oodp', 'creational', 'factory method'),"
-											+ "('oodp', 'creational', 'abstract factory')");
+											+ "(1, 'something.jpg'),"
+											+ "(2, 'IMG_124.jpg')");
 		
 		connection.createStatement().execute("create table tags("
-											+ "channel varchar(20), "
-											+ "topic varchar(20), "
-											+ "videoclip varchar(20))");
+											+ "Tag_ID int, "
+											+ "Tag_Title varchar(64),"
+											+ "primary key(Tag_ID)"
+											+ ")");
 		connection.createStatement().execute("insert into tags values"
-											+ "('oodp', 'creational', 'singleton'),"
-											+ "('oodp', 'creational', 'factory method'),"
-											+ "('oodp', 'creational', 'abstract factory')");
+											+ "(1, 'kitten'),"
+											+ "(2, 'cat')");
+		
+		connection.createStatement().execute("create table relations("
+											+ "File_ID int, "
+											+ "Tag_ID int,"
+											+ "foreign key(File_ID) references files(File_ID),"
+											+ "foreign key(Tag_ID) references tags(Tag_ID)"
+											+ ")");
+		
+		connection.createStatement().execute("insert into relations values"
+											+ "(2, 1),"
+											+ "(2, 1)");
 		
 		System.out.println("files table created and records successfully inserted");
 		System.out.println("relations table created and records successfully inserted");
