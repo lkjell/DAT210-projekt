@@ -130,6 +130,7 @@
 	height: 680px;
 	float:  right;
 	position: relative;
+	overflow:auto;
 }
 
 .largeImgPanel {
