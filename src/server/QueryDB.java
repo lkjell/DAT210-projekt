@@ -12,6 +12,7 @@ public class QueryDB {
 	public static final String SQL_STATEMENT1 = "select * from files";
 	public static final String SQL_STATEMENT2 = "select * from relations";
 	public static final String SQL_STATEMENT3 = "select * from tags";
+	public static final String SQL_STATEMENT4 = "select * from dirs";
 	
 	public static void main(String[] args) throws SQLException{
 		Connection connection = DriverManager.getConnection(CreateDB.JDBC_URL);
@@ -28,6 +29,10 @@ public class QueryDB {
 		ResultSet resultSetTags = statement.executeQuery(SQL_STATEMENT3);
 		ResultSetMetaData resultSetMetaDataTags = resultSetTags.getMetaData();
 		printTable(resultSetTags, resultSetMetaDataTags);
+		
+		ResultSet resultSetDirs = statement.executeQuery(SQL_STATEMENT4);
+		ResultSetMetaData resultSetMetaDataDirs = resultSetDirs.getMetaData();
+		printTable(resultSetDirs, resultSetMetaDataDirs);
 		
 		if (statement != null) statement.close();
 		if (connection != null) connection.close();
