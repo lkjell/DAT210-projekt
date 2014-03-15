@@ -57,6 +57,7 @@ public class Query {
 		try {
 			cnct = DriverManager.getConnection( CreateDB.JDBC_URL );
 			stmt = cnct.createStatement();
+			
 		} catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
@@ -99,43 +100,67 @@ public class Query {
 	
 	public int addFiles( String path ) {
 		URI uri = null;
-		try { uri = new URI( path ); }
-		catch( URISyntaxException e ) { e.printStackTrace(); return 0; }
+		try {
+			uri = new URI( path.replace( " ", "%20" ) );
+		}
+		catch( URISyntaxException e ) {
+			e.printStackTrace();
+			return 0;
+		}
 		
-		System.out.println( "adding file(s) from "+ uri.getPath() );
+		System.out.println( "adding file(s) from "+ uri ); //.getPath()
 		System.out.println( "scheme "+ uri.getScheme() );
 		
 		int added = 0;
-		if( uri.getScheme().equals( "file:" )) {
-			File file = new File( uri.getPath() );
+		/*if( uri.getScheme().equals( "file:" )) {*/
+			File file = new File( uri.toString().replace("%20", " ") );
 			added = addFile( file );
-		} else return addPath( uri.getPath() );
+		/*} else return addPath( uri.toString() );*/
 		return added;
 	}
 	
 	private int addFile( File file ) {
 		int added = 0;
+		System.out.println("wdiuctk");
 		if( file.isDirectory() ) {
+			System.out.println("dickdickdick");
 			for( File each : file.listFiles() ) { added += addFile( each ); }
 		} else return addPath( file.getPath() );
 		return added;
 	}
 	
 	private int addPath( String path ) {
-		try { return stmt.executeUpdate( "INSERT INTO files VALUES("+ path +");" ); }
-		catch( SQLException e ) { e.printStackTrace(); return 0; }
+		try {
+			stmt.executeUpdate(
+					"INSERT INTO files(path) "
+					+ "VALUES('" + path.toString() + "')"
+					);
+			System.out.println( "adding file "+ path );
+			return 0;
+			}
+		catch( SQLException e ) {
+			System.out.println( path );
+			e.printStackTrace();
+			return 0; }
+		
 	}
 
-	public boolean removeFile( int fileId ) {
+	public int removeFiles(int[] fileId) {
+		int removed = 0;
+		for(int id:fileId){
+			removed += removeFile( id );
+		}
+		return removed;
+	}
+	public int removeFile( int fileId ) {
 		try {
-			return stmt.executeUpdate( "DELETE FROM files WHERE file_ID = "+ fileId +";" ) > 0
-			? true : false;
-		} catch( SQLException e ) { e.printStackTrace(); return false; }
+			return stmt.executeUpdate( "DELETE FROM files WHERE file_ID = "+ fileId );
+		} catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 	
 	public int update( int fileId, String value ) {
 		try {
-			return stmt.executeUpdate( "UPDATE files SET path = "+ value +" WHERE file_ID = "+ fileId +";" );
+			return stmt.executeUpdate( "UPDATE files SET path = \""+ value +"\" WHERE file_ID = "+ fileId );
 		} catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 }

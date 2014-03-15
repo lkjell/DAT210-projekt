@@ -62,6 +62,10 @@ public class MetaNetServer extends Server {
 	    
 		trayicon = new ServerTrayIcon( this );
 		
+		//query.addFiles("C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img");
+		query.removeFile(1);
+		query.main( new String[]{""} );
+		
 	    try {
 			this.start(); // Attempt to bind server to given port
 		    this.join();  // Pause this thread while server runs

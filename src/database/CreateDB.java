@@ -13,28 +13,28 @@ public class CreateDB {
 		Class.forName(DRIVER);
 		Connection connection = DriverManager.getConnection(JDBC_URL);
 		connection.createStatement().execute("create table files("
-											+ "file_ID int, "
+											+ "file_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) , "
 											+ "path varchar(256),"
-											+ "primary key(file_ID)"
+											+ "primary key(file_id)"
 											+ ")");
-		connection.createStatement().execute("insert into files values"
-											+ "(1, 'test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/something.jpg'),"
-											+ "(2, 'IMG_124.jpg')");
+		connection.createStatement().execute("insert into files (path) values"
+											+ "( 'test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/something.jpg'),"
+											+ "( 'IMG_124.jpg')");
 		
 		connection.createStatement().execute("create table tags("
-											+ "tag_ID int, "
+											+ "tag_ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), "
 											+ "tag_Title varchar(64),"
 											+ "primary key(tag_ID)"
 											+ ")");
-		connection.createStatement().execute("insert into tags values"
-											+ "(1, 'kitten'),"
-											+ "(2, 'cat')");
+		connection.createStatement().execute("insert into tags (tag_title) values"
+											+ "( 'kitten'),"
+											+ "( 'cat')");
 		
 		connection.createStatement().execute("create table relations("
 											+ "file_ID int, "
 											+ "tag_ID int,"
-											+ "foreign key(file_ID) references files(file_ID),"
-											+ "foreign key(tag_ID) references tags(tag_ID)"
+											+ "foreign key(file_ID) references files(file_ID) on delete cascade,"
+											+ "foreign key(tag_ID) references tags(tag_ID) on delete cascade"
 											+ ")");
 		
 		connection.createStatement().execute("create table dirs("
