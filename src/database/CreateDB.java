@@ -1,4 +1,4 @@
-package server;
+package database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,7 +52,4 @@ public class CreateDB {
 		System.out.println("tags table created and records successfully inserted");
 		System.out.println("dirs table created and records successfully inserted");
 	}
-	
-	
-
 }
