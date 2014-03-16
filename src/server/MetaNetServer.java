@@ -29,7 +29,8 @@ public class MetaNetServer extends Server {
 	ServerTrayIcon trayicon;
 	final database.Query query = new Query();
 	
- 	public MetaNetServer( Config cnfg ) throws Exception {
+ 	@SuppressWarnings("static-access")
+	public MetaNetServer( Config cnfg ) throws Exception {
  		this.cnfg = cnfg;
  		ServerConnector connector = new ServerConnector( this );
  		connector.setPort( cnfg.port );

@@ -1,8 +1,6 @@
 package database;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,6 +13,11 @@ public class Query {
 	public static final String SQL_STATEMENT1 = "select * from files";
 	public static final String SQL_STATEMENT2 = "select * from relations";
 	public static final String SQL_STATEMENT3 = "select * from tags";
+	
+	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
+	public static final String SQL_SETPATH = "UPDATE files SET path = \"%s\" WHERE file_ID = %s";
+	public static final String SQL_ADDPATH = "INSERT INTO files(path) VALUES('%s')";
+	public static final String SQL_REMPATH = "DELETE FROM files WHERE file_ID = %s";
 	
 	private Connection cnct;
 	private Statement  stmt;
@@ -57,7 +60,6 @@ public class Query {
 		try {
 			cnct = DriverManager.getConnection( CreateDB.JDBC_URL );
 			stmt = cnct.createStatement();
-			
 		} catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
@@ -66,7 +68,7 @@ public class Query {
 	public String getPath( int fileId ) {
 		String str = null;
 		try {
-			str = stmt.executeQuery( "SELECT path FROM files WHERE file_ID = "+ fileId +";" ).getString( 1 );
+			str = stmt.executeQuery( String.format( SQL_GETPATH, fileId ) ).getString( 1 );
 			/*if ( str.startsWith( ">" )) { // contains only relative path, get full path
 				int dirId = ByteBuffer.wrap( str.getBytes() ).getInt( 1 );
 				str = stmt.executeQuery( "SELECT path FROM dirs WHERE dir_ID = "+ dirId +";" ).getString( 1 )
@@ -92,75 +94,39 @@ public class Query {
 		return result;
 	}
 	
-	public int addFiles( String[] paths ) {
+	public int addFiles( String... paths ) {
 		int added = 0;
-		for( String path : paths ) added += addFiles( path );
-		return added;
-	}
-	
-	public int addFiles( String path ) {
-		URI uri = null;
-		try {
-			uri = new URI( path.replace( " ", "%20" ) );
-		}
-		catch( URISyntaxException e ) {
-			e.printStackTrace();
-			return 0;
-		}
-		
-		System.out.println( "adding file(s) from "+ uri ); //.getPath()
-		System.out.println( "scheme "+ uri.getScheme() );
-		
-		int added = 0;
-		/*if( uri.getScheme().equals( "file:" )) {*/
-			File file = new File( uri.toString().replace("%20", " ") );
-			added = addFile( file );
-		/*} else return addPath( uri.toString() );*/
+		for( String path : paths ) added += addFile( new File( path ) );
 		return added;
 	}
 	
 	private int addFile( File file ) {
 		int added = 0;
-		System.out.println("wdiuctk");
 		if( file.isDirectory() ) {
-			System.out.println("dickdickdick");
 			for( File each : file.listFiles() ) { added += addFile( each ); }
 		} else return addPath( file.getPath() );
 		return added;
 	}
 	
 	private int addPath( String path ) {
-		try {
-			stmt.executeUpdate(
-					"INSERT INTO files(path) "
-					+ "VALUES('" + path.toString() + "')"
-					);
-			System.out.println( "adding file "+ path );
-			return 0;
-			}
-		catch( SQLException e ) {
-			System.out.println( path );
-			e.printStackTrace();
-			return 0; }
-		
+		try { return stmt.executeUpdate( String.format( SQL_ADDPATH, path )); }
+		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 
 	public int removeFiles(int[] fileId) {
 		int removed = 0;
-		for(int id:fileId){
-			removed += removeFile( id );
-		}
+		for( int id : fileId ){ removed += removeFile( id ); }
 		return removed;
 	}
+	
 	public int removeFile( int fileId ) {
-		try {
-			return stmt.executeUpdate( "DELETE FROM files WHERE file_ID = "+ fileId );
-		} catch( SQLException e ) { e.printStackTrace(); return 0; }
+		try { return stmt.executeUpdate( String.format( SQL_REMPATH, fileId )); }
+		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 	
 	public int update( int fileId, String value ) {
 		try {
-			return stmt.executeUpdate( "UPDATE files SET path = \""+ value +"\" WHERE file_ID = "+ fileId );
+			return stmt.executeUpdate( String.format( SQL_SETPATH, value, fileId ));
 		} catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 }
