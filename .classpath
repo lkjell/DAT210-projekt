@@ -36,5 +36,6 @@
 			<attribute name="javadoc_location" value="http://db.apache.org/derby/docs/10.10/publishedapi/jdbc4/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/metadata-extractor-2.6.4/metadata-extractor-2.6.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
