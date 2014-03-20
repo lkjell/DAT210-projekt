@@ -1,4 +1,4 @@
-<!DOCTYPE=HTML>
+﻿<!DOCTYPE=HTML>
 
 <html>
 	<head>
@@ -24,8 +24,10 @@
 				        <div id="m1" 
 				            onmouseover="mcancelclosetime()" 
 				            onmouseout="mclosetime()">
-				        <input id="upload" type="file"/>
-						<a href="" id="upload_link">Upload File</a>
+				        <form method="post" action="fileupload" enctype="multipart/form-data">
+							<input name="userfile1" type="file" />
+							<input type="submit" value="Submit" />
+						</form>
 				        </div>
 				    </li>
 				    <li><a href="#">View</a></li>
