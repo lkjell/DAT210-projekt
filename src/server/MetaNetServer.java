@@ -41,8 +41,8 @@ public class MetaNetServer extends Server {
 	    resource_handler.setWelcomeFiles( new String[] { cnfg.getWebIndex() });
 	    resource_handler.setResourceBase( "." );
 	    HandlerList handlers = new HandlerList();
-	    handlers.setHandlers( new Handler[] { new HTMLhandler( cnfg.getWebIndex() ),
-	    		/*new RequestFilename(),*/ resource_handler, new DefaultHandler(), new FileUpload() });
+	    handlers.setHandlers( new Handler[] { new HTMLhandler( cnfg.getWebIndex() ), new FileUpload(),
+	    		/*new RequestFilename(),*/ resource_handler, new DefaultHandler() });
 	    this.setHandler( handlers );
 	    
 		ServerTrayIcon.make( this );
