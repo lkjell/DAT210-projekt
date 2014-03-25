@@ -49,6 +49,19 @@ function hideMe(obj) {
     obj.style.visibility = 'hidden';
 }
 
+<script type="text/javascript">
+/* KEYNAV */
+document.onkeydown = function(e) {
+if (! e) var e = window.event;
+var code = e.charCode ? e.charCode : e.keyCode;
+if (! e.shiftKey && ! e.ctrlKey && ! e.altKey && ! e.metaKey) {
+if (code == Event.KEY_LEFT) {
+if ($('previous_page_link')) location.href = $('previous_page_link').href;
+} else if (code == Event.KEY_RIGHT) {
+if ($('next_page_link')) location.href = $('next_page_link').href;}
+}
+}); 
+</script>
 
 //Disabler scrollbar
 //var ar=new Array(33,34,35,36,37,38,39,40);

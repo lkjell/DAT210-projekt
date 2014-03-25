@@ -53,3 +53,13 @@
 	</body>
 	<button type="button" onclick="alert('Next picture')">Neste</button>
 </html>
+
+<p>
+{block:PreviousPage}
+<a id="previous_page_link" href="{PreviousPage}">PREVIOUS PAGE</a> 
+{/block:PreviousPage}
+
+{block:NextPage}
+<a id="next_page_link" href="{NextPage}">NEXT PAGE</a>
+{/block:NextPage}
+</p>
