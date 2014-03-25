@@ -20,15 +20,24 @@ $( function() {
 			var imgSource = $(this).find('img').attr('src');
 			document.getElementById('largeImg').src = imgSource; 
 			showLargeImagePanel();
+			
 			unselectAll();
 			//alert(imgSource);
 		}
 	);
 	
 	$( ".largeImgPanel" ).click(
-		function() {
-		document.getElementById('largeImgPanel').style.visibility = 'hidden';
-		});
+			function() {
+				document.getElementById('largeImgPanel').style.visibility = 'hidden';
+			}
+			);
+			//  alert("DET skjer noe!!");
+			
+						
+			
+
+
+
 
 
 	
