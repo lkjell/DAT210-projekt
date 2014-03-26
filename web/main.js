@@ -16,10 +16,10 @@ $( function() {
 			var imgSource = $(this).find('img').attr('src');
 			document.getElementById('largeImg').src = imgSource; 
 			showLargeImagePanel();
-			$('#button').css('hidden');
-			skjulKnappene();
-			unselectAll();
-			$(".image").keypress();
+			//$('#button').css('hidden');
+			//skjulKnappene();
+			//unselectAll();
+			//$(".image").keypress();
 	});
 	
 		$( ".largeImgPanel" ).click(
@@ -35,7 +35,7 @@ $( function() {
             document.getElementById('largeImgPanel').style.visibility = 'visible';
 			
             }
-            function unselectAll() {
+            //function unselectAll() {
                 if(document.selection) document.selection.empty();
                 if(window.getSelection) window.getSelection().removeAllRanges();
             }
@@ -55,12 +55,12 @@ function showLargeImagePanel() {
 	$('#button').css('hidden');
 }
 
-function unselectAll() {
+//function unselectAll() {
     if(document.selection) document.selection.empty();
     if(window.getSelection) window.getSelection().removeAllRanges();
 }
 
-function hideMe(obj) {
+//function hideMe(obj) {
     obj.style.visibility = 'hidden';
 }
 
