@@ -1,6 +1,3 @@
-$( function() {
-$('body').append('<div id="largeImgPanel" onclick="hideMe(this);"><img id="largeImg" style="height: 100%; margin: 0; padding: 0;" /></div>');
-});
 
 $( function() {
 	$( ".image" ).draggable({
@@ -25,8 +22,26 @@ $( function() {
 			$(".image").keypress();
 	});
 	
+		$( ".largeImgPanel" ).click(
+		function() {
+		document.getElementById('largeImgPanel').style.visibility = 'hidden';
+		});
+
+	
 });
 
+//vic
+            function showLargeImagePanel() {
+            document.getElementById('largeImgPanel').style.visibility = 'visible';
+			
+            }
+            function unselectAll() {
+                if(document.selection) document.selection.empty();
+                if(window.getSelection) window.getSelection().removeAllRanges();
+            }
+
+
+//diroy
 function skjulKnappene() {
 	$('#button').css('hidden');
 }
