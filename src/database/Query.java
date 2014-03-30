@@ -15,9 +15,26 @@ public class Query {
 	public static final String SQL_STATEMENT3 = "select * from tags";
 	
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
-	public static final String SQL_SETPATH = "UPDATE files SET path = \"%s\" WHERE file_ID = %s";
+	public static final String SQL_SETPATH = "UPDATE files SET path = '%s' WHERE file_ID = %s";
 	public static final String SQL_ADDPATH = "INSERT INTO files(path) VALUES('%s')";
 	public static final String SQL_REMPATH = "DELETE FROM files WHERE file_ID = %s";
+
+	public static final String SQL_GETKW = "SELECT A.value FROM tags_ascii T, ascii A"
+			+ "WHERE T.file_ID = %s AND T.tag_ID = %s AND T.val_ID = A.val_ID";
+	public static final String SQL_ADDKW = "INSERT INTO tags_ascii VALUES(%s, %s, %s)";
+	public static final String SQL_REMKW = "DELETE FROM tags_ascii WHERE file_ID = %s AND tag_ID = %s";
+
+	private static final String SQL_GETASCIIID = "SELECT val_ID FROM ascii WHERE value = '%s'";
+	private static final String SQL_ADDASCII = "INSERT INTO ascii VALUES('%s')";
+	public static final String SQL_SETASCII = "UPDATE ascii SET value = '%s' WHERE value = '%s'";
+	private static final String SQL_DELASCII = "DELETE FROM ascii WHERE value = %s";
+	
+	private static final int XPKEYWORDS_ID = 0x00009C9E;
+	
+	//public static final String SQL_GETTAG = "SELECT tag_title FROM tags WHERE tag_ID = %s";
+	//public static final String SQL_SETTAG = "UPDATE tags SET tag_title = '%s' WHERE tag_ID = %s";
+	//public static final String SQL_ADDTAG = "INSERT INTO tags(tag_title) VALUES('%s')";
+	//public static final String SQL_REMTAG = "DELETE FROM tags WHERE tag_ID = %s";
 	
 	private Connection cnct;
 	private Statement  stmt;
@@ -66,16 +83,8 @@ public class Query {
 	public File getFile( int fileId ) { return new File( getPath( fileId )); }
 	
 	public String getPath( int fileId ) {
-		String str = null;
-		try {
-			str = stmt.executeQuery( String.format( SQL_GETPATH, fileId ) ).getString( 1 );
-			/*if ( str.startsWith( ">" )) { // contains only relative path, get full path
-				int dirId = ByteBuffer.wrap( str.getBytes() ).getInt( 1 );
-				str = stmt.executeQuery( "SELECT path FROM dirs WHERE dir_ID = "+ dirId +";" ).getString( 1 )
-						+ str.substring( 5 );
-			}*/
-		} catch( SQLException e ) { e.printStackTrace(); }
-		return str;
+		try { return stmt.executeQuery( String.format( SQL_GETPATH, fileId )).getString( 1 ); }
+		catch( SQLException e ) { e.printStackTrace(); return null; }
 	}
 	
 	public ResultSet search( String conditions ) {
@@ -109,24 +118,92 @@ public class Query {
 	}
 	
 	private int addPath( String path ) {
-		try { return stmt.executeUpdate( String.format( SQL_ADDPATH, path )); }
+		try { return formatUpdate( SQL_ADDPATH, path ); }
 		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 
-	public int removeFiles(int[] fileId) {
+	public int removeFiles( int... fileId ) {
 		int removed = 0;
-		for( int id : fileId ){ removed += removeFile( id ); }
+		for( int id : fileId ) { removed += removeFile( id ); }
 		return removed;
 	}
 	
 	public int removeFile( int fileId ) {
-		try { return stmt.executeUpdate( String.format( SQL_REMPATH, fileId )); }
+		try { return formatUpdate( SQL_REMPATH, fileId ); }
 		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
 	
 	public int update( int fileId, String value ) {
+		try { return formatUpdate( SQL_SETPATH, value, fileId ); }
+		catch( SQLException e ) { e.printStackTrace(); return 0; }
+	}
+	
+//	public int addTags( int fileId, int tagId) {
+//		int added = 0;
+//		//for( int file : fileid ) added += 0;
+//		return added;
+//	}
+	
+	/*
+	 * Exif : Microsoft : XPKeywords
+	 */
+
+	public ResultSet getKeywords( int fileId ) {
+		try { return stmt.executeQuery( String.format( SQL_GETKW, fileId, XPKEYWORDS_ID )); }
+		catch( SQLException e ) { e.printStackTrace(); return null; }
+	}
+	
+	public void addKeywords( int fileId, String kw ) {
+		int valId = formatQueryInt( SQL_GETASCIIID, kw );
 		try {
-			return stmt.executeUpdate( String.format( SQL_SETPATH, value, fileId ));
-		} catch( SQLException e ) { e.printStackTrace(); return 0; }
+			if( valId == -1 ) {
+				formatUpdate( SQL_ADDASCII, kw );
+				valId = formatQueryInt( SQL_GETASCIIID, kw );
+			}
+			formatUpdate( SQL_ADDKW, fileId, XPKEYWORDS_ID, valId );
+		} catch( SQLException e ) { e.printStackTrace(); }
+	}
+	
+	public void remKeywords( int fileId ) {
+		try { formatUpdate( SQL_REMKW, fileId, XPKEYWORDS_ID ); }
+		// if #ofReferences to ascii entry drops to 0: delete?
+		catch( SQLException e ) { e.printStackTrace(); }
+	}
+	
+	public void setAscii( String kwold, String kwnew ) {
+		try { formatUpdate( SQL_SETASCII, kwnew, kwold ); }
+		catch( SQLException e ) { e.printStackTrace(); }
+	}
+	
+	public void delAscii( String str ) {
+		try { formatUpdate( SQL_DELASCII, str ); }
+		catch( SQLException e ) { e.printStackTrace(); }
+	}
+	
+	private int sqlInsert( String table, Object...objs ) throws SQLException {
+		String str = "INSERT " + table + " VALUES(";
+		for ( int i=0; i<objs.length; i++ ) {
+			str += i!=0?", ":"" + objs[i].toString();
+		}
+		return stmt.executeUpdate( str );
+	}
+	
+	private int sqlDelete( String table, Object...objs ) throws SQLException {
+		String str = "DELETE FROM " + table + " WHERE ";
+		for ( int i=0; i<objs.length; i++ ) {
+			str += i!=0 ? " AND " : "" + objs[i].toString();
+		}
+		return stmt.executeUpdate( str );
+	}
+	
+	private int formatUpdate( String sql, Object...objs ) throws SQLException {
+		return stmt.executeUpdate( String.format( sql, objs ));
+	}
+	private ResultSet formatQuery( String sql, Object...objs ) throws SQLException {
+		return stmt.executeQuery( String.format( sql, objs ));
+	}
+	private int formatQueryInt( String sql, Object...objs ) {
+		try{ return stmt.executeQuery( String.format( sql, objs )).getInt( 1 ); }
+		catch( SQLException e ) { return -1; }
 	}
 }

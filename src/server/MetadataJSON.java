@@ -19,23 +19,15 @@ public class MetadataJSON {
 	
 	StringBuilder json = new StringBuilder();
 	
-	public StringBuilder getJson() {
-		return json;
-	}
-
-	public static void main(String[] args) {
-        new MetadataJSON( "img/1209692254638.jpg" );
-    }
+	public StringBuilder getJson() { return json; }
 	
 	public MetadataJSON( String fileName ) {
-		try {
-			readAndDisplayMetadata( fileName );
-		} catch(Exception e) { e.printStackTrace(); }
+		try { readAndDisplayMetadata( fileName ); }
+		catch( Exception e ) { e.printStackTrace(); }
 	}
 	
     void readAndDisplayMetadata( String fileName ) {
         try {
-
             File file = new File( fileName );
             ImageInputStream iis = ImageIO.createImageInputStream(file);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
@@ -52,19 +44,15 @@ public class MetadataJSON {
                 IIOMetadata metadata = reader.getImageMetadata(0);
                 
                 json.append( "{" );
-
                 String[] names = metadata.getMetadataFormatNames();
                 int length = names.length;
                 for (int i = 0; i < length; i++) {
                     if ( i>0 ) { json.append( ",\n" ); }
                     json.append( displayMetadata( metadata.getAsTree( names[i] )));
                 }
-
                 json.append( "}" );
             }
-            
-        }
-        catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     String displayMetadata(Node root) {

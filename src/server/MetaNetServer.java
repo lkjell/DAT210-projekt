@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+import database.CreateDB;
 import database.Query;
 
 public class MetaNetServer extends Server {
@@ -63,8 +64,9 @@ public class MetaNetServer extends Server {
 	    
 		trayicon = new ServerTrayIcon( this );
 		
-		//query.addFiles("C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img");
-		query.removeFile(1);
+		CreateDB.main( new String[]{""} );
+		query.addFiles("C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img");
+		//query.removeFile(1);
 		query.main( new String[]{""} );
 		
 	    try {
