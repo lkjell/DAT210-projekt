@@ -182,10 +182,3 @@
 	#sddm div a:hover
 	{	background: #49A3FF;
 		color: #FFF}
-
-#upload_link{
-    text-decoration:none;
-}
-#upload{
-    display:none
-}

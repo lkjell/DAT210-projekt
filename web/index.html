@@ -24,9 +24,13 @@
 				        <div id="m1" 
 				            onmouseover="mcancelclosetime()" 
 				            onmouseout="mclosetime()">
-				        <form method="post" action="#sendfile" enctype="multipart/form-data">
-							<input name="userfile1" type="file" />
-							<input type="submit" value="Submit" />
+				        <form name="form1" id="form1" action="test" method="post" enctype="multipart/form-data">
+							<input type="hidden" name="hiddenfield1" value="ok">
+							Files to upload:
+							<br/>
+							<input type="file" size="50" name="file1">
+							<br/>
+							<input type="submit" value="Upload">
 						</form>
 				        </div>
 				    </li>
