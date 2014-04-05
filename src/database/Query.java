@@ -9,27 +9,29 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Query {
+	//TODO bruk prepared statement http://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html
 	
-	public static final String SQL_STATEMENT1 = "select * from files";
-	public static final String SQL_STATEMENT2 = "select * from relations";
-	public static final String SQL_STATEMENT3 = "select * from tags";
+	
+	public static final String SELECT_ALL_FILES = "select * from files";
+	public static final String SELECT_ALL_RELATIONS = "select * from relations";
+	public static final String SELECT_ALL_TAGS = "select * from xp_tag";
 	
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
 	public static final String SQL_SETPATH = "UPDATE files SET path = '%s' WHERE file_ID = %s";
 	public static final String SQL_ADDPATH = "INSERT INTO files(path) VALUES('%s')";
 	public static final String SQL_REMPATH = "DELETE FROM files WHERE file_ID = %s";
 
-	public static final String SQL_GETKW = "SELECT A.value FROM tags_ascii T, ascii A"
-			+ "WHERE T.file_ID = %s AND T.tag_ID = %s AND T.val_ID = A.val_ID";
-	public static final String SQL_ADDKW = "INSERT INTO tags_ascii VALUES(%s, %s, %s)";
-	public static final String SQL_REMKW = "DELETE FROM tags_ascii WHERE file_ID = %s AND tag_ID = %s";
+	public static final String SQL_GETKW = "SELECT xp_tag.tag FROM relation, xp_tag"
+			+ "WHERE relation.file_ID = %s  AND relation.xp_tag_ID = xp_tag.xp_tag_ID";
+	public static final String SQL_ADDKW = "INSERT INTO relation VALUES(%s, %s)";
+	public static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
 
-	private static final String SQL_GETASCIIID = "SELECT val_ID FROM ascii WHERE value = '%s'";
-	private static final String SQL_ADDASCII = "INSERT INTO ascii VALUES('%s')";
-	public static final String SQL_SETASCII = "UPDATE ascii SET value = '%s' WHERE value = '%s'";
-	private static final String SQL_DELASCII = "DELETE FROM ascii WHERE value = %s";
+	private static final String SQL_GET_XP_TAG_ID = "SELECT val_ID FROM xp_tag WHERE tag = '%s'";
+	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag VALUES('%s')";
+	public static final String SQL_SET_XP_TAG = "UPDATE xp_tag SET tag = '%s' WHERE tag = '%s'";
+	private static final String SQL_DELETE_XP_TAG = "DELETE FROM xp_tag WHERE tag = %s";
 	
-	private static final int XPKEYWORDS_ID = 0x00009C9E;
+	//private static final int XPKEYWORDS_ID = 0x00009C9E;
 	
 	//public static final String SQL_GETTAG = "SELECT tag_title FROM tags WHERE tag_ID = %s";
 	//public static final String SQL_SETTAG = "UPDATE tags SET tag_title = '%s' WHERE tag_ID = %s";
@@ -43,15 +45,16 @@ public class Query {
 		Connection connection = DriverManager.getConnection(CreateDB.JDBC_URL);
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSetFiles = statement.executeQuery(SQL_STATEMENT1);
+		
+		ResultSet resultSetFiles = statement.executeQuery(SELECT_ALL_FILES);
 		ResultSetMetaData resultSetMetaDataFiles = resultSetFiles.getMetaData();
 		printTable(resultSetFiles, resultSetMetaDataFiles);
 		
-		ResultSet resultSetRelations = statement.executeQuery(SQL_STATEMENT2);
+		ResultSet resultSetRelations = statement.executeQuery(SELECT_ALL_RELATIONS);
 		ResultSetMetaData resultSetMetaDataRelations = resultSetRelations.getMetaData();
 		printTable(resultSetRelations, resultSetMetaDataRelations);
 		
-		ResultSet resultSetTags = statement.executeQuery(SQL_STATEMENT3);
+		ResultSet resultSetTags = statement.executeQuery(SELECT_ALL_TAGS);
 		ResultSetMetaData resultSetMetaDataTags = resultSetTags.getMetaData();
 		printTable(resultSetTags, resultSetMetaDataTags);
 		
@@ -149,34 +152,34 @@ public class Query {
 	 */
 
 	public ResultSet getKeywords( int fileId ) {
-		try { return stmt.executeQuery( String.format( SQL_GETKW, fileId, XPKEYWORDS_ID )); }
+		try { return stmt.executeQuery( String.format( SQL_GETKW, fileId)); }
 		catch( SQLException e ) { e.printStackTrace(); return null; }
 	}
 	
 	public void addKeywords( int fileId, String kw ) {
-		int valId = formatQueryInt( SQL_GETASCIIID, kw );
+		int valId = formatQueryInt( SQL_GET_XP_TAG_ID, kw );
 		try {
 			if( valId == -1 ) {
-				formatUpdate( SQL_ADDASCII, kw );
-				valId = formatQueryInt( SQL_GETASCIIID, kw );
+				formatUpdate( SQL_ADD_XP_TAG, kw );
+				valId = formatQueryInt( SQL_GET_XP_TAG_ID, kw );
 			}
-			formatUpdate( SQL_ADDKW, fileId, XPKEYWORDS_ID, valId );
+			formatUpdate( SQL_ADDKW, fileId, valId );
 		} catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
 	public void remKeywords( int fileId ) {
-		try { formatUpdate( SQL_REMKW, fileId, XPKEYWORDS_ID ); }
-		// if #ofReferences to ascii entry drops to 0: delete?
+		try { formatUpdate( SQL_REMKW, fileId); }
+		// if #ofReferences to xp_tag entry drops to 0: delete?
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
 	public void setAscii( String kwold, String kwnew ) {
-		try { formatUpdate( SQL_SETASCII, kwnew, kwold ); }
+		try { formatUpdate( SQL_SET_XP_TAG, kwnew, kwold ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
 	public void delAscii( String str ) {
-		try { formatUpdate( SQL_DELASCII, str ); }
+		try { formatUpdate( SQL_DELETE_XP_TAG, str ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
