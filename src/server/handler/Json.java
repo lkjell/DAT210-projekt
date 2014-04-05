@@ -1,6 +1,8 @@
 package server.handler;
 
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,14 +30,26 @@ public class Json extends AbstractHandler {
 			// http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
 			// https://restful-api-design.readthedocs.org/en/latest/resources.html
 			String accept = req.getHeader( "Accept" );
-			if( accept.contains( "application/x-resource+json" )) {
-				String param = req.getParameter( "id" );
-				if( param != null ) {
-					query.getPath( Integer.parseInt( param ));
-				}
-			} else if( accept.contains( "application/x-collection+json" )) {
+			if( accept.contains( "application/x-resource+json" )
+					|| accept.contains( "application/x-collection+json" )
+					|| accept.contains( "application/json" )) {
 				
-			} else if( accept.contains( "application/json" )) {
+				String img = req.getParameter( "img" );
+				if( img != null ) {
+					ResultSet kw = null;
+					try { kw = query.getKeywords( Integer.parseInt( img )); }
+					catch( NumberFormatException e ) { e.printStackTrace(); }
+					StringBuilder kwlist = new StringBuilder();
+					boolean first = true;
+					try {
+						while(kw.next()) {
+							if( !first ) { kwlist.append( ",\"" ); }
+							kwlist.append( kw.getString( 1 ) +'"' );
+							first = false;
+						}
+					} catch (SQLException e) { e.printStackTrace(); }
+					rsp.getWriter().println( "{\"XPKeywords\":["+ kwlist +"]}" );
+				}
 				
 			} else {
 				System.out.println( "Unknown Accept header in GET request: \""+ accept +"\"" );

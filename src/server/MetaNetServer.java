@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+import server.handler.Json;
 import database.CreateDB;
 import database.Query;
 
@@ -56,7 +57,8 @@ public class MetaNetServer extends Server {
 	    
 	    ContextHandler ch2 = new ContextHandler();
 	    ch2.setContextPath( "/getTags" );
-	    ch2.setHandler( new HandlerMetadataRequest() );
+	  //ch2.setHandler( new HandlerMetadataRequest() );
+	    ch2.setHandler( new Json( query ) );
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
 	    contexts.setHandlers( new Handler[]{ ch0, ch1, ch2 });
