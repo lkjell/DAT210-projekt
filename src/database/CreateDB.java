@@ -28,14 +28,14 @@ public class CreateDB {
 
 		//lager tabell xp_tag
 		connection.createStatement().execute( "CREATE TABLE xp_tag("
-				+ "xp_tag_ID INT NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), PRIMARY KEY(val_ID)"
+				+ "xp_tag_ID INT NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), PRIMARY KEY(xp_tag_ID),"
 				+ "tag VARCHAR(255) NOT NULL UNIQUE" + ")" );
 		System.out.println( "xp_tag table created" );
 
 		//ny relations tabell
 		connection.createStatement().execute( "CREATE TABLE relation("
 				+ "file_ID INT, FOREIGN KEY(file_ID) REFERENCES files(file_ID) ON DELETE CASCADE,"
-				+ "xp_tag_ID INT, FOREIGN KEY(xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE,"+ ")" );
+				+ "xp_tag_ID INT, FOREIGN KEY(xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE"+ ")" );
 		System.out.println( "relation table created" );
 
 		/*TRENGER VI DISSE?		
