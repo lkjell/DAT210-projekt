@@ -12,7 +12,6 @@ public class CreateDB {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		Class.forName(DRIVER);
 		Connection connection = DriverManager.getConnection(JDBC_URL);
-		
 		//lager tabell files
 		connection.createStatement().execute("create table files("
 				+ "file_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) , "
@@ -21,10 +20,10 @@ public class CreateDB {
 				+ ")");
 		
 		//putter eksempeldata inn i files
-		connection.createStatement().execute("insert into files (path) values"
-				+ "( 'test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/something.jpg'),"
-				+ "( 'IMG_124.jpg')");
-		System.out.println("files table created and records successfully inserted");
+//		connection.createStatement().execute("insert into files (path) values"
+//				+ "( 'test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/test/something.jpg'),"
+//				+ "( 'IMG_124.jpg')");
+//		System.out.println("files table created and records successfully inserted");
 
 		//lager tabell xp_tag
 		connection.createStatement().execute( "CREATE TABLE xp_tag("

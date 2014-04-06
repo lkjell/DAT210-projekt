@@ -1,12 +1,20 @@
 package database;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.IImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
 
 public class Query {
 	//TODO bruk prepared statement http://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html
@@ -16,18 +24,19 @@ public class Query {
 	public static final String SELECT_ALL_RELATIONS = "select * from relation";
 	public static final String SELECT_ALL_TAGS = "select * from xp_tag";
 	
+	public static final String SQL_GETFILEID = "SELECT file_ID FROM files WHERE path = '%s'";
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
 	public static final String SQL_SETPATH = "UPDATE files SET path = '%s' WHERE file_ID = %s";
 	public static final String SQL_ADDPATH = "INSERT INTO files(path) VALUES('%s')";
 	public static final String SQL_REMPATH = "DELETE FROM files WHERE file_ID = %s";
 
 	public static final String SQL_GETKW = "SELECT xp_tag.tag FROM relation, xp_tag"
-			+ "WHERE relation.file_ID = %s  AND relation.xp_tag_ID = xp_tag.xp_tag_ID";
+			+ " WHERE relation.file_ID = %s AND relation.xp_tag_ID = xp_tag.xp_tag_ID";
 	public static final String SQL_ADDKW = "INSERT INTO relation VALUES(%s, %s)";
 	public static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
 
 	private static final String SQL_GET_XP_TAG_ID = "SELECT val_ID FROM xp_tag WHERE tag = '%s'";
-	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag VALUES('%s')";
+	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag (tag) VALUES('%s')";
 	public static final String SQL_SET_XP_TAG = "UPDATE xp_tag SET tag = '%s' WHERE tag = '%s'";
 	private static final String SQL_DELETE_XP_TAG = "DELETE FROM xp_tag WHERE tag = %s";
 	
@@ -121,8 +130,27 @@ public class Query {
 	}
 	
 	private int addPath( String path ) {
-		try { return formatUpdate( SQL_ADDPATH, path ); }
-		catch( SQLException e ) { e.printStackTrace(); return 0; }
+		int updated = 0;
+		int id = 0;
+		String[] kws = null;
+		try {
+			updated = formatUpdate( SQL_ADDPATH, path );
+			id = formatQueryInt( SQL_GETFILEID, path );
+			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File( path ));
+			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
+			kws = field.getStringValue().split( ";" );
+		} catch( SQLException | ImageReadException | IOException e ) {
+			e.printStackTrace();
+			return updated;
+		}
+		try {
+			ResultSet rs = formatQuery( SQL_GETPATH, 1 );
+			if (rs.next()) { System.out.println( rs.getString( 1 ) ); }
+		} catch (SQLException e) {e.printStackTrace();}
+		System.out.println( id +" >> "+ path );
+		for( String kw: kws ) { addKeywords( id, kw ); System.out.print( kw +"; " ); }
+		System.out.println();
+		return updated;
 	}
 
 	public int removeFiles( int... fileId ) {

@@ -32,7 +32,8 @@ public class Json extends AbstractHandler {
 			String accept = req.getHeader( "Accept" );
 			if( accept.contains( "application/x-resource+json" )
 					|| accept.contains( "application/x-collection+json" )
-					|| accept.contains( "application/json" )) {
+					|| accept.contains( "application/json" )
+					|| accept.contains( "application/xml" )) {
 				
 				String img = req.getParameter( "img" );
 				if( img != null ) {
@@ -42,13 +43,14 @@ public class Json extends AbstractHandler {
 					StringBuilder kwlist = new StringBuilder();
 					boolean first = true;
 					try {
-						while(kw.next()) {
+						while( kw.next()) {
 							if( !first ) { kwlist.append( ",\"" ); }
 							kwlist.append( kw.getString( 1 ) +'"' );
 							first = false;
 						}
-					} catch (SQLException e) { e.printStackTrace(); }
+					} catch ( SQLException e ) { e.printStackTrace(); }
 					rsp.getWriter().println( "{\"XPKeywords\":["+ kwlist +"]}" );
+					baseReq.setHandled( true );
 				}
 				
 			} else {
