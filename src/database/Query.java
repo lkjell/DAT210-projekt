@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
@@ -17,12 +18,12 @@ import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
 
 public class Query {
 	//TODO bruk prepared statement http://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html
-	
-	
+
+
 	public static final String SELECT_ALL_FILES = "select * from files";
 	public static final String SELECT_ALL_RELATIONS = "select * from relation";
 	public static final String SELECT_ALL_TAGS = "select * from xp_tag";
-	
+
 	public static final String SQL_GETFILEID = "SELECT file_id FROM files WHERE path = '%s'";
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
 	public static final String SQL_SETPATH = "UPDATE files SET path = '%s' WHERE file_ID = %s";
@@ -38,38 +39,36 @@ public class Query {
 	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag (tag) VALUES('%s')";
 	public static final String SQL_SET_XP_TAG = "UPDATE xp_tag SET tag = '%s' WHERE tag = '%s'";
 	private static final String SQL_DELETE_XP_TAG = "DELETE FROM xp_tag WHERE tag = %s";
-	
+
 	//private static final int XPKEYWORDS_ID = 0x00009C9E;
-	
+
 	//public static final String SQL_GETTAG = "SELECT tag_title FROM tags WHERE tag_ID = %s";
 	//public static final String SQL_SETTAG = "UPDATE tags SET tag_title = '%s' WHERE tag_ID = %s";
 	//public static final String SQL_ADDTAG = "INSERT INTO tags(tag_title) VALUES('%s')";
 	//public static final String SQL_REMTAG = "DELETE FROM tags WHERE tag_ID = %s";
-	
+
 	private Connection cnct;
 	private Statement  stmt;
-	
-	public static void main(String[] args) throws SQLException{
-		Connection connection = DriverManager.getConnection(CreateDB.JDBC_URL);
-		Statement statement = connection.createStatement();
-		
-		
+
+	public void notMain() throws SQLException{
+		Statement statement = cnct.createStatement();
+
+
 		ResultSet resultSetFiles = statement.executeQuery(SELECT_ALL_FILES);
 		ResultSetMetaData resultSetMetaDataFiles = resultSetFiles.getMetaData();
 		printTable(resultSetFiles, resultSetMetaDataFiles);
-		
+
 		ResultSet resultSetRelations = statement.executeQuery(SELECT_ALL_RELATIONS);
 		ResultSetMetaData resultSetMetaDataRelations = resultSetRelations.getMetaData();
 		printTable(resultSetRelations, resultSetMetaDataRelations);
-		
+
 		ResultSet resultSetTags = statement.executeQuery(SELECT_ALL_TAGS);
 		ResultSetMetaData resultSetMetaDataTags = resultSetTags.getMetaData();
 		printTable(resultSetTags, resultSetMetaDataTags);
-		
-		if (statement != null) statement.close();
-		if (connection != null) connection.close();
+
+		cnct.commit();
 	}
-	
+
 	public static void printTable(ResultSet table, ResultSetMetaData tableData) throws SQLException{
 		System.out.println(tableData.getTableName(1));
 		int columnCount = tableData.getColumnCount();
@@ -87,49 +86,63 @@ public class Query {
 	public Query() {
 		try {
 			cnct = DriverManager.getConnection( CreateDB.JDBC_URL );
+			cnct.setAutoCommit(false);
 			stmt = cnct.createStatement();
 		} catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
+
+
 	public File getFile( int fileId ) { return new File( getPath( fileId )); }
-	
+
 	public String getPath( int fileId ) {
-		try { return stmt.executeQuery( String.format( SQL_GETPATH, fileId )).getString( 1 ); }
+		try { 
+			String ret = stmt.executeQuery( String.format( SQL_GETPATH, fileId )).getString( 1 );
+			cnct.commit();
+			return ret; }
 		catch( SQLException e ) { e.printStackTrace(); return null; }
 	}
-	
-	public ResultSet search( String conditions ) {
-		
+
+	/*public ResultSet search( String conditions ) {
+
 		StringBuilder sb = new StringBuilder();
 		String[] s = conditions.replace( "\"", "\\\"" ).split( " " ); // BUG PRONE !!!
 		for( int i=0; i<s.length; i++ ) {
 			sb.append(( i>0?" AND ":"" ) +"path LIKE \"%"+ s[i] +"%\"" );
 		}
 		conditions = sb.toString();
-		
+
 		ResultSet result = null;
 		try {
 			result = stmt.executeQuery( "SELECT * FROM files WHERE "+ conditions +";" );
 		} catch( SQLException e ) { e.printStackTrace(); }
 		return result;
-	}
-	
-	public ResultSet getAllFileIds() {
+	}*/
+
+	public Integer[] getAllFileIds() {
 		try {
-			return stmt.executeQuery("SELECT file_id FROM files");
+			ResultSet rs = stmt.executeQuery("SELECT file_id FROM files");
+			ArrayList<Integer> faen = new ArrayList<>();
+			while(rs.next()) {
+				faen.add(rs.getInt(1));
+			}
+			Integer[] a = faen.toArray(new Integer[1]);
+			cnct.commit();
+			return a;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace(); return null;
+			e.printStackTrace(); 
+			return null;
 		}
-		
+
 	}
-	
+
 	public int addFiles( String... paths ) {
 		int added = 0;
 		for( String path : paths ) added += addFile( new File( path ) );
 		return added;
 	}
-	
+
 	private int addFile( File file ) {
 		int added = 0;
 		if( file.isDirectory() ) {
@@ -137,7 +150,7 @@ public class Query {
 		} else return addPath( file.getPath() );
 		return added;
 	}
-	
+
 	private int addPath( String path ) {
 		int updated = 0;
 		int id = 0;
@@ -158,6 +171,7 @@ public class Query {
 		try {
 			ResultSet rs = formatQuery( SQL_GETPATH, 1 );
 			if (rs.next()) { System.out.println( rs.getString( 1 ) ); }
+			cnct.commit();
 		} catch (SQLException e) {e.printStackTrace();}
 		System.out.println( id +" >> "+ path );
 		for( String kw: kws ) { addKeywords( id, kw ); System.out.print( kw +"; " ); }
@@ -170,32 +184,37 @@ public class Query {
 		for( int id : fileId ) { removed += removeFile( id ); }
 		return removed;
 	}
-	
+
 	public int removeFile( int fileId ) {
-		try { return formatUpdate( SQL_REMPATH, fileId ); }
+		try { int ret = formatUpdate( SQL_REMPATH, fileId ); cnct.commit(); return ret; }
 		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
-	
+
 	public int update( int fileId, String value ) {
-		try { return formatUpdate( SQL_SETPATH, value, fileId ); }
+		try { int ret = formatUpdate( SQL_SETPATH, value, fileId ); cnct.commit(); return ret; }
 		catch( SQLException e ) { e.printStackTrace(); return 0; }
 	}
-	
-//	public int addTags( int fileId, int tagId) {
-//		int added = 0;
-//		//for( int file : fileid ) added += 0;
-//		return added;
-//	}
-	
+
+	//	public int addTags( int fileId, int tagId) {
+	//		int added = 0;
+	//		//for( int file : fileid ) added += 0;
+	//		return added;
+	//	}
+
 	/*
 	 * Exif : Microsoft : XPKeywords
 	 */
 
-	public ResultSet getKeywords( int fileId ) {
-		try { return stmt.executeQuery( String.format( SQL_GETKW, fileId)); }
+	public String[] getKeywords( int fileId ) {
+		try {
+			ResultSet rs = stmt.executeQuery( String.format( SQL_GETKW, fileId));
+			String[] kw = rs.getString(1).split(";");
+			kw[kw.length -1].trim();
+			cnct.commit();
+			return kw;}
 		catch( SQLException e ) { e.printStackTrace(); return null; }
 	}
-	
+
 	public void addKeywords( int fileId, String kw ) {
 		int valId = formatQueryInt( SQL_GET_XP_TAG_ID, kw );
 		try {
@@ -206,47 +225,57 @@ public class Query {
 			formatUpdate( SQL_ADDKW, fileId, valId );
 		} catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
 	public void remKeywords( int fileId ) {
 		try { formatUpdate( SQL_REMKW, fileId); }
 		// if #ofReferences to xp_tag entry drops to 0: delete?
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
 	public void setAscii( String kwold, String kwnew ) {
 		try { formatUpdate( SQL_SET_XP_TAG, kwnew, kwold ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
 	public void delAscii( String str ) {
 		try { formatUpdate( SQL_DELETE_XP_TAG, str ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
 	@SuppressWarnings("unused")
 	private int sqlInsert( String table, Object...objs ) throws SQLException {
 		String str = "INSERT " + table + " VALUES(";
 		for ( int i=0; i<objs.length; i++ ) {
 			str += i!=0?", ":"" + objs[i].toString();
 		}
-		return stmt.executeUpdate( str );
+		int a = stmt.executeUpdate( str );
+		cnct.commit(); 
+		return a;
+
 	}
-	
+
 	@SuppressWarnings("unused")
 	private int sqlDelete( String table, Object...objs ) throws SQLException {
 		String str = "DELETE FROM " + table + " WHERE ";
 		for ( int i=0; i<objs.length; i++ ) {
 			str += i!=0 ? " AND " : "" + objs[i].toString();
 		}
-		return stmt.executeUpdate( str );
+		int a = stmt.executeUpdate( str );
+		cnct.commit();
+		return a;
+	}
+
+	private int formatUpdate( String sql, Object...objs ) throws SQLException {
+		int a = stmt.executeUpdate( String.format( sql, objs ));
+		cnct.commit();
+		return a;
 	}
 	
-	private int formatUpdate( String sql, Object...objs ) throws SQLException {
-		return stmt.executeUpdate( String.format( sql, objs ));
-	}
 	private ResultSet formatQuery( String sql, Object...objs ) throws SQLException {
-		return stmt.executeQuery( String.format( sql, objs ));
+		ResultSet a = stmt.executeQuery( String.format( sql, objs ));
+		return a;
 	}
+	
 	private int formatQueryInt( String sql, Object...objs ) {
 		try{ 
 			ResultSet satan = stmt.executeQuery( String.format( sql, objs ));
@@ -254,4 +283,5 @@ public class Query {
 		}
 		catch( SQLException e ) { e.printStackTrace();return -1; }
 	}
+
 }

@@ -1,9 +1,6 @@
 package server.handler;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,20 +32,15 @@ public class Json extends AbstractHandler {
 					|| accept.contains( "application/json" )
 					|| accept.contains( "application/xml" )) {
 				
-				String img = req.getParameter( "img" );
-				if( img != null ) {
-					ResultSet kw = null;
-					try { kw = query.getKeywords( Integer.parseInt( img )); }
+				String img_id = req.getParameter( "img" );
+				if( img_id != null ) {
+					String[] kw = null;
+					try { kw = query.getKeywords( Integer.parseInt( img_id )); }
 					catch( NumberFormatException e ) { e.printStackTrace(); }
 					StringBuilder kwlist = new StringBuilder();
-					boolean first = true;
-					try {
-						while( kw.next()) {
-							if( !first ) { kwlist.append( ",\"" ); }
-							kwlist.append( kw.getString( 1 ) +'"' );
-							first = false;
-						}
-					} catch ( SQLException e ) { e.printStackTrace(); }
+					for (int i=0;i<kw.length;i++) {
+						kwlist.append(i==0?"": ","+ "\"" + kw[i] + "\"" );
+					}
 					rsp.getWriter().println( "{\"XPKeywords\":["+ kwlist +"]}" );
 					baseReq.setHandled( true );
 				}

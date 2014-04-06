@@ -12,6 +12,7 @@ public class CreateDB {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		Class.forName(DRIVER);
 		Connection connection = DriverManager.getConnection(JDBC_URL);
+		connection.setAutoCommit(false);
 		//lager tabell files
 		try {
 			connection.createStatement().execute("create table files("
@@ -84,5 +85,7 @@ public class CreateDB {
 
 */
 
+		connection.commit();
+		connection.close();
 	}
 }

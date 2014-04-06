@@ -32,31 +32,35 @@ public class MetaNetServer extends Server {
 	ServerTrayIcon trayicon;
 	final database.Query query = new Query();
 	
- 	@SuppressWarnings("static-access")
-	public MetaNetServer( Config cnfg ) throws Exception {
+ 	public MetaNetServer( Config cnfg ) throws Exception {
  		this.cnfg = cnfg;
  		ServerConnector connector = new ServerConnector( this );
  		connector.setPort( cnfg.port );
  		this.setConnectors( new Connector[]{ connector });
  		
  		//handler requests for alle filene webIndex spesifiserer (ie stylesheet.css)
-	    ResourceHandler rh0 = new ResourceHandler();
-	    rh0.setDirectoriesListed( true );
-	    rh0.setWelcomeFiles( new String[] { cnfg.webIndex });
-	    rh0.setResourceBase( cnfg.webDir );
+	    ResourceHandler webDirHandler = new ResourceHandler();
+	    webDirHandler.setDirectoriesListed( true );
+	    webDirHandler.setWelcomeFiles( new String[] { cnfg.webIndex });
+	    webDirHandler.setResourceBase( cnfg.webDir );
 	    
 	    
-	    GetImageHandler imageHandler = new GetImageHandler();
-	    imageHandler.setContextPath("img/");
+	    GetImageHandler imageHandler = new GetImageHandler(query);
 	    
 	    //
 	    HandlerList handlers = new HandlerList();
 	    handlers.setHandlers( new Handler[] {
 	    		
-	    		new HandlerHTML( "web/index.html" , query), 
+	    		//leverer html
+	    		new HandlerHTML( "web/index.html" , query),
 	    		
-	    		rh0, 
+	    		//leverer bilder
+	    		imageHandler,	    		 
 	    		
+	    		//leverer web docs
+	    		webDirHandler, 
+	    		
+	    		//que? no comprende last effort 404
 	    		new DefaultHandler() });
 	    ContextHandler omnipotentHandler = new ContextHandler();
 	    omnipotentHandler.setContextPath( "/" );
@@ -72,7 +76,7 @@ public class MetaNetServer extends Server {
 	    ContextHandler ch2 = new ContextHandler();
 	    ch2.setContextPath( "/getTags" );
 	  //ch2.setHandler( new HandlerMetadataRequest() );
-	    ch2.setHandler(  );
+	    ch2.setHandler( new Json(query));
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
 	    contexts.setHandlers( new Handler[]{ omnipotentHandler, ch1, ch2 });
@@ -83,7 +87,7 @@ public class MetaNetServer extends Server {
 		CreateDB.main( new String[]{""} );
 		query.addFiles("C:/Users/andreas/Dropbox/Bilder");
 		//query.removeFile(1);
-		query.main( new String[]{""} );
+		query.notMain( );
 		
 	    try {
 			this.start(); // Attempt to bind server to given port

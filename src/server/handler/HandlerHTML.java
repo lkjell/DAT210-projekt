@@ -2,8 +2,7 @@ package server.handler;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,22 +24,15 @@ public class HandlerHTML extends AbstractHandler {
 	
 	//metode for å klargjøre html til client
 	private String editHTML() throws IOException {
-		ResultSet files_id = query.getAllFileIds();
+		Integer[] files_id = query.getAllFileIds();
 
-		
  		Document doc = Jsoup.parse( new File( htmlPath ), "utf-8" );
  		Element images = doc.getElementsByClass( "images" ).first();
  		
- 		try {
-			while (files_id.next() ) {
-				int id = files_id.getInt(1);
-				images.appendElement( "li" ).attr( "class", "image" ).attr( "id", Integer.toString(id) )
-						.appendElement( "img" ).attr( "src", ("img/" + id)).attr( "alt", "Request did not succeed" );
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+ 		if (files_id != null) for (int i:files_id) {
+			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", Integer.toString(i) )
+					.appendElement( "img" ).attr( "src", ("?img=" + i)).attr( "alt", "Request did not succeed" );
+		} else System.out.println("noge tull");
  		return doc.toString();
  	
 //		File dir = new File("img/");
