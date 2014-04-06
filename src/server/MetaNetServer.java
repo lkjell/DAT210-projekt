@@ -20,9 +20,10 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
-import server.handler.Json;
+import server.handler.*;
 import database.CreateDB;
 import database.Query;
+
 
 public class MetaNetServer extends Server {
 	
@@ -38,16 +39,29 @@ public class MetaNetServer extends Server {
  		connector.setPort( cnfg.port );
  		this.setConnectors( new Connector[]{ connector });
  		
+ 		//handler requests for alle filene webIndex spesifiserer (ie stylesheet.css)
 	    ResourceHandler rh0 = new ResourceHandler();
 	    rh0.setDirectoriesListed( true );
 	    rh0.setWelcomeFiles( new String[] { cnfg.webIndex });
 	    rh0.setResourceBase( cnfg.webDir );
+	    
+	    
+	    GetImageHandler imageHandler = new GetImageHandler();
+	    imageHandler.setContextPath("img/");
+	    
+	    //
 	    HandlerList handlers = new HandlerList();
 	    handlers.setHandlers( new Handler[] {
-	    		new HandlerHTML( "web/index.html" ), rh0, new DefaultHandler() });
-	    ContextHandler ch0 = new ContextHandler();
-	    ch0.setContextPath( "/" );
-	    ch0.setHandler( handlers );
+	    		
+	    		new HandlerHTML( "web/index.html" , query), 
+	    		
+	    		rh0, 
+	    		
+	    		new DefaultHandler() });
+	    ContextHandler omnipotentHandler = new ContextHandler();
+	    omnipotentHandler.setContextPath( "/" );
+	    omnipotentHandler.setHandler( handlers );
+	    
 	    
 	    ResourceHandler rh1 = new ResourceHandler();
 	    rh1.setResourceBase( "./img" ); //TODO: Replace with query to database to get specific image path
@@ -58,16 +72,16 @@ public class MetaNetServer extends Server {
 	    ContextHandler ch2 = new ContextHandler();
 	    ch2.setContextPath( "/getTags" );
 	  //ch2.setHandler( new HandlerMetadataRequest() );
-	    ch2.setHandler( new Json( query ) );
+	    ch2.setHandler(  );
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers( new Handler[]{ ch0, ch1, ch2 });
+	    contexts.setHandlers( new Handler[]{ omnipotentHandler, ch1, ch2 });
 	    this.setHandler( contexts );
 	    
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFiles("C:/Users/andreas/Dropbox/Bilder/481005_541957575854596_1348734650_n.jpg");
+		query.addFiles("C:/Users/andreas/Dropbox/Bilder");
 		//query.removeFile(1);
 		query.main( new String[]{""} );
 		

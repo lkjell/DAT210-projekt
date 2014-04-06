@@ -11,7 +11,6 @@ import java.sql.Statement;
 
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.common.IImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
@@ -115,6 +114,16 @@ public class Query {
 		return result;
 	}
 	
+	public ResultSet getAllFileIds() {
+		try {
+			return stmt.executeQuery("SELECT file_id FROM files");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace(); return null;
+		}
+		
+	}
+	
 	public int addFiles( String... paths ) {
 		int added = 0;
 		for( String path : paths ) added += addFile( new File( path ) );
@@ -138,6 +147,7 @@ public class Query {
 			id = formatQueryInt( SQL_GETFILEID, path );
 			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File( path ));
 			System.out.println(jpeg==null);
+			if (jpeg == null) return updated;
 			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
 			if (field == null) return updated;
 			kws = field.getStringValue().split( ";" );
@@ -213,6 +223,7 @@ public class Query {
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
+	@SuppressWarnings("unused")
 	private int sqlInsert( String table, Object...objs ) throws SQLException {
 		String str = "INSERT " + table + " VALUES(";
 		for ( int i=0; i<objs.length; i++ ) {
@@ -221,6 +232,7 @@ public class Query {
 		return stmt.executeUpdate( str );
 	}
 	
+	@SuppressWarnings("unused")
 	private int sqlDelete( String table, Object...objs ) throws SQLException {
 		String str = "DELETE FROM " + table + " WHERE ";
 		for ( int i=0; i<objs.length; i++ ) {

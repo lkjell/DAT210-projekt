@@ -44,8 +44,8 @@ public class CreateDB {
 		//ny relations tabell
 		try {
 			connection.createStatement().execute( "CREATE TABLE relation("
-					+ "file_ID INT, contraint foreign_fileId (FOREIGN KEY(file_ID) REFERENCES files(file_ID) ON DELETE CASCADE),"
-					+ "xp_tag_ID INT, contraint foreign_tagId (FOREIGN KEY(xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE)"+ ")" );
+					+ "file_ID INT, FOREIGN KEY (file_ID) REFERENCES files(file_ID) ON DELETE CASCADE,"
+					+ "xp_tag_ID INT, FOREIGN KEY (xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE"+ ")" );
 			System.out.println( "relation table created" );
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

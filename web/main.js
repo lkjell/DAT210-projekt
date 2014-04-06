@@ -22,7 +22,7 @@ function requestMetadata( file ) {
 
 	console.log("ajax request "+ file);
 	$.ajax({
-		url: "getTags/"+ file,
+		url: "getTags?img="+ file,
 		dataType: 'json',
 		success: function( data, status, xhr ) {
 			dom = $('<div>');
