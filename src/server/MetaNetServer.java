@@ -67,7 +67,7 @@ public class MetaNetServer extends Server {
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFiles("C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img");
+		query.addFiles("C:/Users/andreas/Dropbox/Bilder/481005_541957575854596_1348734650_n.jpg");
 		//query.removeFile(1);
 		query.main( new String[]{""} );
 		

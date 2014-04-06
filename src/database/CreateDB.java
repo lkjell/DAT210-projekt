@@ -13,11 +13,16 @@ public class CreateDB {
 		Class.forName(DRIVER);
 		Connection connection = DriverManager.getConnection(JDBC_URL);
 		//lager tabell files
-		connection.createStatement().execute("create table files("
-				+ "file_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) , "
-				+ "path varchar(256),"
-				+ "primary key(file_id)"
-				+ ")");
+		try {
+			connection.createStatement().execute("create table files("
+					+ "file_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) , "
+					+ "path varchar(256) constraint unique_path unique,"
+					+ "primary key(file_id)"
+					+ ")");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		//putter eksempeldata inn i files
 //		connection.createStatement().execute("insert into files (path) values"
@@ -26,16 +31,26 @@ public class CreateDB {
 //		System.out.println("files table created and records successfully inserted");
 
 		//lager tabell xp_tag
-		connection.createStatement().execute( "CREATE TABLE xp_tag("
-				+ "xp_tag_ID INT NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), PRIMARY KEY(xp_tag_ID),"
-				+ "tag VARCHAR(255) NOT NULL UNIQUE" + ")" );
-		System.out.println( "xp_tag table created" );
+		try {
+			connection.createStatement().execute( "CREATE TABLE xp_tag("
+					+ "xp_tag_ID INT NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), PRIMARY KEY(xp_tag_ID),"
+					+ "tag VARCHAR(255) constraint tag_not_null NOT NULL constraint tag_unique UNIQUE" + ")" );
+			System.out.println( "xp_tag table created" );
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		//ny relations tabell
-		connection.createStatement().execute( "CREATE TABLE relation("
-				+ "file_ID INT, FOREIGN KEY(file_ID) REFERENCES files(file_ID) ON DELETE CASCADE,"
-				+ "xp_tag_ID INT, FOREIGN KEY(xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE"+ ")" );
-		System.out.println( "relation table created" );
+		try {
+			connection.createStatement().execute( "CREATE TABLE relation("
+					+ "file_ID INT, contraint foreign_fileId (FOREIGN KEY(file_ID) REFERENCES files(file_ID) ON DELETE CASCADE),"
+					+ "xp_tag_ID INT, contraint foreign_tagId (FOREIGN KEY(xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE)"+ ")" );
+			System.out.println( "relation table created" );
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		/*TRENGER VI DISSE?		
 				connection.createStatement().execute("create table tags("

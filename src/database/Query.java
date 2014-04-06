@@ -24,7 +24,7 @@ public class Query {
 	public static final String SELECT_ALL_RELATIONS = "select * from relation";
 	public static final String SELECT_ALL_TAGS = "select * from xp_tag";
 	
-	public static final String SQL_GETFILEID = "SELECT file_ID FROM files WHERE path = '%s'";
+	public static final String SQL_GETFILEID = "SELECT file_id FROM files WHERE path = '%s'";
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
 	public static final String SQL_SETPATH = "UPDATE files SET path = '%s' WHERE file_ID = %s";
 	public static final String SQL_ADDPATH = "INSERT INTO files(path) VALUES('%s')";
@@ -35,7 +35,7 @@ public class Query {
 	public static final String SQL_ADDKW = "INSERT INTO relation VALUES(%s, %s)";
 	public static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
 
-	private static final String SQL_GET_XP_TAG_ID = "SELECT val_ID FROM xp_tag WHERE tag = '%s'";
+	private static final String SQL_GET_XP_TAG_ID = "SELECT xp_tag_ID FROM xp_tag WHERE tag = '%s'";
 	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag (tag) VALUES('%s')";
 	public static final String SQL_SET_XP_TAG = "UPDATE xp_tag SET tag = '%s' WHERE tag = '%s'";
 	private static final String SQL_DELETE_XP_TAG = "DELETE FROM xp_tag WHERE tag = %s";
@@ -137,7 +137,9 @@ public class Query {
 			updated = formatUpdate( SQL_ADDPATH, path );
 			id = formatQueryInt( SQL_GETFILEID, path );
 			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File( path ));
+			System.out.println(jpeg==null);
 			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
+			if (field == null) return updated;
 			kws = field.getStringValue().split( ";" );
 		} catch( SQLException | ImageReadException | IOException e ) {
 			e.printStackTrace();
@@ -234,7 +236,10 @@ public class Query {
 		return stmt.executeQuery( String.format( sql, objs ));
 	}
 	private int formatQueryInt( String sql, Object...objs ) {
-		try{ return stmt.executeQuery( String.format( sql, objs )).getInt( 1 ); }
-		catch( SQLException e ) { return -1; }
+		try{ 
+			ResultSet satan = stmt.executeQuery( String.format( sql, objs ));
+			if(satan.next()) return satan.getInt(1); else return -1;
+		}
+		catch( SQLException e ) { e.printStackTrace();return -1; }
 	}
 }
