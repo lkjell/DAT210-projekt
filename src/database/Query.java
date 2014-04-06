@@ -13,7 +13,7 @@ public class Query {
 	
 	
 	public static final String SELECT_ALL_FILES = "select * from files";
-	public static final String SELECT_ALL_RELATIONS = "select * from relations";
+	public static final String SELECT_ALL_RELATIONS = "select * from relation";
 	public static final String SELECT_ALL_TAGS = "select * from xp_tag";
 	
 	public static final String SQL_GETPATH = "SELECT path FROM files WHERE file_ID = %s";
