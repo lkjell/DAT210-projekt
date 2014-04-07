@@ -97,7 +97,9 @@ public class Query {
 
 	public String getPath( int fileId ) {
 		try { 
-			String ret = stmt.executeQuery( String.format( SQL_GETPATH, fileId )).getString( 1 );
+			ResultSet rs = stmt.executeQuery( String.format( SQL_GETPATH, fileId ));
+			rs.next();
+			String ret = rs.getString(1);
 			cnct.commit();
 			return ret; }
 		catch( SQLException e ) { e.printStackTrace(); return null; }
@@ -132,7 +134,7 @@ public class Query {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace(); 
-			return null;
+			return new Integer[0];
 		}
 
 	}
@@ -159,11 +161,11 @@ public class Query {
 			updated = formatUpdate( SQL_ADDPATH, path );
 			id = formatQueryInt( SQL_GETFILEID, path );
 			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File( path ));
-			System.out.println(jpeg==null);
 			if (jpeg == null) return updated;
 			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
 			if (field == null) return updated;
-			kws = field.getStringValue().split( ";" );
+			kws = field.getStringValue().trim().split( ";" );
+			
 		} catch( SQLException | ImageReadException | IOException e ) {
 			e.printStackTrace();
 			return updated;
@@ -207,12 +209,17 @@ public class Query {
 
 	public String[] getKeywords( int fileId ) {
 		try {
+			ArrayList<String> arraylist = new ArrayList<>();
+			
 			ResultSet rs = stmt.executeQuery( String.format( SQL_GETKW, fileId));
-			String[] kw = rs.getString(1).split(";");
-			kw[kw.length -1].trim();
+			while(rs.next()) arraylist.add(rs.getString(1));
 			cnct.commit();
-			return kw;}
+			String[] ret = new String[arraylist.size()];
+			arraylist.toArray(ret);
+			return ret;
+			}
 		catch( SQLException e ) { e.printStackTrace(); return null; }
+		
 	}
 
 	public void addKeywords( int fileId, String kw ) {
@@ -279,7 +286,10 @@ public class Query {
 	private int formatQueryInt( String sql, Object...objs ) {
 		try{ 
 			ResultSet satan = stmt.executeQuery( String.format( sql, objs ));
-			if(satan.next()) return satan.getInt(1); else return -1;
+			if(satan.next()){
+				int ret = satan.getInt(1); 
+				cnct.commit();
+				return ret;}else {cnct.commit(); return -1;}
 		}
 		catch( SQLException e ) { e.printStackTrace();return -1; }
 	}

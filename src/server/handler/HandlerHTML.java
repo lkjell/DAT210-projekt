@@ -19,6 +19,7 @@ public class HandlerHTML extends AbstractHandler {
 	
 	String htmlPath;
 	Query query;
+	static int antallAccepterteHTMLCall = 0;
 	
 	public HandlerHTML( String path , Query query) { this.htmlPath = path; this.query = query;}
 	
@@ -29,10 +30,10 @@ public class HandlerHTML extends AbstractHandler {
  		Document doc = Jsoup.parse( new File( htmlPath ), "utf-8" );
  		Element images = doc.getElementsByClass( "images" ).first();
  		
- 		if (files_id != null) for (int i:files_id) {
+ 		for (int i:files_id) {
 			images.appendElement( "li" ).attr( "class", "image" ).attr( "id", Integer.toString(i) )
-					.appendElement( "img" ).attr( "src", ("?img=" + i)).attr( "alt", "Request did not succeed" );
-		} else System.out.println("noge tull");
+					.appendElement( "img" ).attr( "src", ("img/?img_id=" + i)).attr( "alt", "Request did not succeed" );
+		}
  		return doc.toString();
  	
 //		File dir = new File("img/");
@@ -64,9 +65,18 @@ public class HandlerHTML extends AbstractHandler {
 	public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
 	        throws IOException, ServletException {
 
+		String uri = baseRequest.getRequestURI();
+		
 		// Hvis ikke foerste request, send til neste handler.
-		if ( !baseRequest.getRequestURI().equals( "/" )) { return; }
+		if ( !uri.equals( "/" )) { 
+			System.out.println("Uri ikke acceptert: " + uri);
+			return; }
+		
+		antallAccepterteHTMLCall++;
 
+		System.out.println("Uri acceptert: " + uri);
+		
+		System.out.println("antallAccepterteHTMLCall: " + antallAccepterteHTMLCall);
 	    response.setContentType("text/html;charset=utf-8");
 	    response.setStatus(HttpServletResponse.SC_OK);
 	    baseRequest.setHandled(true);

@@ -8,7 +8,7 @@ $( function() {
 	);
 
 	$( ".image" ).click(function(){
-		requestMetadata($( this ).find(">").attr( "src" ));
+		requestMetadata($( this ).attr( "id" ));
 	});
 
 	$( ".image" ).dblclick( showLargeImagePanel );
@@ -18,11 +18,11 @@ $( function() {
 	});
 });
 
-function requestMetadata( file ) {
+function requestMetadata( file_id ) {
 
-	console.log("ajax request "+ file);
+	console.log("ajax request "+ file_id);
 	$.ajax({
-		url: "getTags?img="+ file,
+		url: "getTags?img_id="+ file_id,
 		dataType: 'json',
 		success: function( data, status, xhr ) {
 			dom = $('<div>');
@@ -59,10 +59,11 @@ function requestMetadata( file ) {
 				if( i === 0 ){
 					if ( value[i] === null ) { continue;	}
 					ul = $('<ul>')
-					$.map(value[0], function(helvette, faen){
+					for(i=0;i<value.length;i++){
 						//console.log( faen + ":" + helvette );
-						ul.append( $('<li>').text( faen + ":" + helvette ));
-					});
+						ul.append( $('<li>').text( value[i] ));
+						console.log(ul.html())
+					};
 					//console.log( $('<div>').append(ul).html() );
 					sub.html( ul );
 					console.log( $('<div>').append(sub).html() );

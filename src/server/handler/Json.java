@@ -15,7 +15,6 @@ public class Json extends AbstractHandler {
 	Query query;
 	
 	public Json( Query query ) { this.query = query; }
-
 	@Override
 	public void handle(String target, Request baseReq, HttpServletRequest req,
 			HttpServletResponse rsp) throws IOException, ServletException {
@@ -32,16 +31,20 @@ public class Json extends AbstractHandler {
 					|| accept.contains( "application/json" )
 					|| accept.contains( "application/xml" )) {
 				
-				String img_id = req.getParameter( "img" );
+				String img_id = req.getParameter( "img_id" );
 				if( img_id != null ) {
 					String[] kw = null;
-					try { kw = query.getKeywords( Integer.parseInt( img_id )); }
+					try { System.out.println("img_id i json :" + img_id); 
+						kw = query.getKeywords( Integer.parseInt( img_id )); }
 					catch( NumberFormatException e ) { e.printStackTrace(); }
 					StringBuilder kwlist = new StringBuilder();
 					for (int i=0;i<kw.length;i++) {
-						kwlist.append(i==0?"": ","+ "\"" + kw[i] + "\"" );
+						kwlist.append((i==0?"": ",")+ "\"" + kw[i] + "\"" );
 					}
-					rsp.getWriter().println( "{\"XPKeywords\":["+ kwlist +"]}" );
+					String jsonString = "{\"XPKeywords\":["+ kwlist +"]}";
+					System.out.println(jsonString);
+					rsp.getWriter().println( jsonString );
+					baseReq.setContentType("application/json");
 					baseReq.setHandled( true );
 				}
 				

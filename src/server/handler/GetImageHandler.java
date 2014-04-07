@@ -38,18 +38,20 @@ public class GetImageHandler extends AbstractHandler {
 			HttpServletRequest request, HttpServletResponse response)
 					throws IOException, ServletException {
 		// Hvis ikke foerste request, send til neste handler.
-		if ( !baseRequest.getRequestURI().startsWith("/?img=")) {System.out.println("en fil med feil path" +baseRequest.getRequestURI());return; }
+		if ( !baseRequest.getRequestURI().startsWith("/img/")) {
+			System.out.println("en fil med feil path" +baseRequest.getRequestURI());return; 
+			}
 		System.out.println("img dir found");
 		String imageExtension = null;
 		int fileId = 0;
 		byte[] b = null;
 
 		try {
-			fileId = Integer.parseInt(request.getParameter("img"));
-			System.out.println("parse filid success!");
+			fileId = Integer.parseInt(request.getParameter("img_id"));
+			System.out.println("parse filid success! result: " + fileId);
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace(); System.err.println("id er ikke int!?"+" file id:"+ fileId + request.getRequestURL());
+			e.printStackTrace(); System.err.println("id er ikke int!?" + " file id:" + fileId + request.getRequestURL());
 
 			return;
 		} 
@@ -57,7 +59,7 @@ public class GetImageHandler extends AbstractHandler {
 		System.out.println("database lookup done");
 		b = new byte[(int)image.length()];
 		String imagePath = image.getPath();
-		imageExtension = imagePath.substring(imagePath.lastIndexOf("."));
+		imageExtension = imagePath.substring(imagePath.lastIndexOf(".") + 1);
 		FileInputStream input = new FileInputStream(image);
 		int antallSkrevet = input.read(b);
 		System.out.println("skrev " + antallSkrevet + " bytes av: "+ imagePath);

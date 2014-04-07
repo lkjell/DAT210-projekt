@@ -66,26 +66,26 @@ public class MetaNetServer extends Server {
 	    omnipotentHandler.setContextPath( "/" );
 	    omnipotentHandler.setHandler( handlers );
 	    
-	    
-	    ResourceHandler rh1 = new ResourceHandler();
-	    rh1.setResourceBase( "./img" ); //TODO: Replace with query to database to get specific image path
-	    ContextHandler ch1 = new ContextHandler();
-	    ch1.setContextPath( "/img" );
-	    ch1.setHandler( rh1 );
-	    
+//	    
+//	    ResourceHandler rh1 = new ResourceHandler();
+//	    rh1.setResourceBase( "./img" ); //TODO: Replace with query to database to get specific image path
+//	    ContextHandler ch1 = new ContextHandler();
+//	    ch1.setContextPath( "/img" );
+//	    ch1.setHandler( rh1 );
+//	    
 	    ContextHandler ch2 = new ContextHandler();
 	    ch2.setContextPath( "/getTags" );
 	  //ch2.setHandler( new HandlerMetadataRequest() );
 	    ch2.setHandler( new Json(query));
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers( new Handler[]{ omnipotentHandler, ch1, ch2 });
+	    contexts.setHandlers( new Handler[]{ omnipotentHandler,  ch2 });
 	    this.setHandler( contexts );
 	    
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFiles("C:/Users/andreas/Dropbox/Bilder");
+		query.addFiles("C:/Users/andreas/Dropbox/Bilder/");
 		//query.removeFile(1);
 		query.notMain( );
 		
