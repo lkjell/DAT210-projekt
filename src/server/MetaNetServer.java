@@ -33,6 +33,8 @@ public class MetaNetServer extends Server {
 	final database.Query query = new Query();
 	
 	String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
+	//String imageDirectory = "C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img";
+
 	
  	public MetaNetServer( Config cnfg ) throws Exception {
  		this.cnfg = cnfg;

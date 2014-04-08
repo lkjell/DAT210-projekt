@@ -9,6 +9,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
@@ -150,20 +152,35 @@ public class Query {
 			e.printStackTrace(System.out); 
 			return new Integer[0];
 		}
-
 	}
-
+	
 	public int addFiles( String... paths ) {
 		int added = 0;
-		for( String path : paths ) added += addFile( new File( path ) );
+		for( String path : paths ) added += addFiles( new File( path ), true );
 		return added;
 	}
-
-	private int addFile( File file ) {
+	private int addFiles( File file, boolean subdir ) {
 		int added = 0;
-		if( file.isDirectory() ) {
-			for( File each : file.listFiles() ) { added += addFile( each ); }
+		if( file.isDirectory() && subdir ) {
+			for( File each : file.listFiles() ) added += addFiles( each, subdir );
 		} else return addPath( file.getPath() );
+		return added;
+	}
+	
+	public int addFilesRegex( String regex, String... paths) {
+		int added = 0;
+		Pattern pattern = Pattern.compile( regex );
+		for( String path : paths ) added += addFilesRegex( pattern, new File( path ), true );
+		return added;
+	}
+	private int addFilesRegex( Pattern regex, File file, boolean subdir ) {
+		int added = 0;
+		if( file.isDirectory() && subdir ) {
+			for( File each : file.listFiles() ) added += addFilesRegex( regex, each, subdir );
+		} else {
+			Matcher matcher = regex.matcher( file.getPath() );
+			if ( matcher.find() ) return addPath( file.getPath() );
+		}
 		return added;
 	}
 
