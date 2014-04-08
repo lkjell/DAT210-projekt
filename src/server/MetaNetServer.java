@@ -32,6 +32,8 @@ public class MetaNetServer extends Server {
 	ServerTrayIcon trayicon;
 	final database.Query query = new Query();
 	
+	String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
+	
  	public MetaNetServer( Config cnfg ) throws Exception {
  		this.cnfg = cnfg;
  		ServerConnector connector = new ServerConnector( this );
@@ -85,7 +87,7 @@ public class MetaNetServer extends Server {
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFiles("C:/Users/andreas/Dropbox/Bilder/");
+		query.addFiles(imageDirectory);
 		//query.removeFile(1);
 		query.printDatabase();
 		
