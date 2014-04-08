@@ -36,7 +36,7 @@ public class Json extends AbstractHandler {
 					String[] kw = null;
 					try { System.out.println("img_id i json :" + img_id); 
 						kw = query.getKeywords( Integer.parseInt( img_id )); }
-					catch( NumberFormatException e ) { e.printStackTrace(); }
+					catch( NumberFormatException e ) { e.printStackTrace(System.out); }
 					StringBuilder kwlist = new StringBuilder();
 					for (int i=0;i<kw.length;i++) {
 						kwlist.append((i==0?"": ",")+ "\"" + kw[i] + "\"" );

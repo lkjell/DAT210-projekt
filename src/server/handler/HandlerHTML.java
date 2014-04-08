@@ -57,7 +57,7 @@ public class HandlerHTML extends AbstractHandler {
 			MetadataExample.read( list_of_files.get(0) );
 		} catch (ImageReadException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}*/
 	}
 	

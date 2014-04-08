@@ -49,50 +49,65 @@ public class Query {
 
 	private Connection cnct;
 	private Statement  stmt;
-
-	public void printDatabase() throws SQLException{
-		Statement statement = cnct.createStatement();
-
-		ResultSet resultSetFiles = statement.executeQuery(SELECT_ALL_FILES);
-		ResultSetMetaData resultSetMetaDataFiles = resultSetFiles.getMetaData();
-		printTable(resultSetFiles, resultSetMetaDataFiles);
-
-		ResultSet resultSetRelations = statement.executeQuery(SELECT_ALL_RELATIONS);
-		ResultSetMetaData resultSetMetaDataRelations = resultSetRelations.getMetaData();
-		printTable(resultSetRelations, resultSetMetaDataRelations);
-
-		ResultSet resultSetTags = statement.executeQuery(SELECT_ALL_TAGS);
-		ResultSetMetaData resultSetMetaDataTags = resultSetTags.getMetaData();
-		printTable(resultSetTags, resultSetMetaDataTags);
-
-		cnct.commit();
-	}
-
-	public static void printTable(ResultSet table, ResultSetMetaData tableData) throws SQLException{
-		System.out.println(tableData.getTableName(1));
-		int columnCount = tableData.getColumnCount();
-		for( int x = 1; x <= columnCount; x++ )
-			System.out.format("%20s", table.getMetaData().getColumnName(x) + " | ");
-		while (table.next()){
-			System.out.println("");
-			for( int x = 1; x <= columnCount; x++ )
-				System.out.format("%20s", table.getString(x) + " | ");
-		}
-		System.out.println("");
-		System.out.println("");
-	}
-
+	
+	//constructor
 	public Query() {
 		try {
 			cnct = DriverManager.getConnection( CreateDB.JDBC_URL );
 			cnct.setAutoCommit(false);
 			stmt = cnct.createStatement();
-		} catch( SQLException e ) { e.printStackTrace(); }
+		} catch( SQLException e ) { e.printStackTrace(System.out); }
 	}
 
+	//henter hele databasen og printer
+	public void printDatabase() throws SQLException{
+		
+		//passer på at databasen ikke commiter slik at resultset kan brukes i hele prosessen
+		cnct.setAutoCommit(false);
+		
+		Statement statement = cnct.createStatement();
 
+		//henter alle fra files tabellen, henter kolonne navn og printer
+		ResultSet resultSetFiles = statement.executeQuery(SELECT_ALL_FILES);
+		ResultSetMetaData resultSetMetaDataFiles = resultSetFiles.getMetaData();
+		printTable(resultSetFiles, resultSetMetaDataFiles);
 
-	public File getFile( int fileId ) { return new File( getPath( fileId )); }
+		//henter alle fra relasjons tabellen, henter kolonne navn og printer
+		ResultSet resultSetRelations = statement.executeQuery(SELECT_ALL_RELATIONS);
+		ResultSetMetaData resultSetMetaDataRelations = resultSetRelations.getMetaData();
+		printTable(resultSetRelations, resultSetMetaDataRelations);
+
+		//henter alle fra tag tabellen, henter kolonne navn og printer
+		ResultSet resultSetTags = statement.executeQuery(SELECT_ALL_TAGS);
+		ResultSetMetaData resultSetMetaDataTags = resultSetTags.getMetaData();
+		printTable(resultSetTags, resultSetMetaDataTags);
+
+		//ferdig med transaksjoner
+		cnct.commit();
+	}
+
+	//printemetode
+	public static void printTable(ResultSet table, ResultSetMetaData tableData) throws SQLException{
+		System.out.println(tableData.getTableName(1));
+		int columnCount = tableData.getColumnCount();
+		for( int x = 1; x <= columnCount; x++ )
+			System.out.format("%100s", table.getMetaData().getColumnName(x) + " | ");
+		
+		//looper resultsettet table
+		while (table.next()){
+			System.out.println("");
+			for( int x = 1; x <= columnCount; x++ )
+				System.out.format("%100s", table.getString(x) + " | ");
+		}
+		System.out.println("");
+		System.out.println("");
+	}
+
+	//henter filepath og lager file object av den
+	public File getFile( int fileId ) { 
+		File ret = new File( getPath( fileId ));
+		return  ret;
+		}
 
 	public String getPath( int fileId ) {
 		try { 
@@ -101,7 +116,7 @@ public class Query {
 			String ret = rs.getString(1);
 			cnct.commit();
 			return ret; }
-		catch( SQLException e ) { e.printStackTrace(); return null; }
+		catch( SQLException e ) { e.printStackTrace(System.out); return null; }
 	}
 
 	/*public ResultSet search( String conditions ) {
@@ -116,7 +131,7 @@ public class Query {
 		ResultSet result = null;
 		try {
 			result = stmt.executeQuery( "SELECT * FROM files WHERE "+ conditions +";" );
-		} catch( SQLException e ) { e.printStackTrace(); }
+		} catch( SQLException e ) { e.printStackTrace(System.out); }
 		return result;
 	}*/
 
@@ -132,7 +147,7 @@ public class Query {
 			return a;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace(); 
+			e.printStackTrace(System.out); 
 			return new Integer[0];
 		}
 
@@ -166,14 +181,14 @@ public class Query {
 			kws = field.getStringValue().trim().split( ";" );
 			
 		} catch( SQLException | ImageReadException | IOException e ) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			return updated;
 		}
 		try {
 			ResultSet rs = formatQuery( SQL_GETPATH, 1 );
 			if (rs.next()) { System.out.println( rs.getString( 1 ) ); }
 			cnct.commit();
-		} catch (SQLException e) {e.printStackTrace();}
+		} catch (SQLException e) {e.printStackTrace(System.out);}
 		System.out.println( id +" >> "+ path );
 		for( String kw: kws ) { addKeywords( id, kw ); System.out.print( kw +"; " ); }
 		System.out.println();
@@ -188,12 +203,12 @@ public class Query {
 
 	public int removeFile( int fileId ) {
 		try { int ret = formatUpdate( SQL_REMPATH, fileId ); cnct.commit(); return ret; }
-		catch( SQLException e ) { e.printStackTrace(); return 0; }
+		catch( SQLException e ) { e.printStackTrace(System.out); return 0; }
 	}
 
 	public int update( int fileId, String value ) {
 		try { int ret = formatUpdate( SQL_SETPATH, value, fileId ); cnct.commit(); return ret; }
-		catch( SQLException e ) { e.printStackTrace(); return 0; }
+		catch( SQLException e ) { e.printStackTrace(System.out); return 0; }
 	}
 
 	//	public int addTags( int fileId, int tagId) {
@@ -217,7 +232,7 @@ public class Query {
 			arraylist.toArray(ret);
 			return ret;
 			}
-		catch( SQLException e ) { e.printStackTrace(); return null; }
+		catch( SQLException e ) { e.printStackTrace(System.out); return null; }
 		
 	}
 
@@ -229,23 +244,23 @@ public class Query {
 				valId = formatQueryInt( SQL_GET_XP_TAG_ID, kw );
 			}
 			formatUpdate( SQL_ADDKW, fileId, valId );
-		} catch( SQLException e ) { e.printStackTrace(); }
+		} catch( SQLException e ) { e.printStackTrace(System.out); }
 	}
 
 	public void remKeywords( int fileId ) {
 		try { formatUpdate( SQL_REMKW, fileId); }
 		// if #ofReferences to xp_tag entry drops to 0: delete?
-		catch( SQLException e ) { e.printStackTrace(); }
+		catch( SQLException e ) { e.printStackTrace(System.out); }
 	}
 
 	public void setAscii( String kwold, String kwnew ) {
 		try { formatUpdate( SQL_SET_XP_TAG, kwnew, kwold ); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		catch( SQLException e ) { e.printStackTrace(System.out); }
 	}
 
 	public void delAscii( String str ) {
 		try { formatUpdate( SQL_DELETE_XP_TAG, str ); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		catch( SQLException e ) { e.printStackTrace(System.out); }
 	}
 
 	@SuppressWarnings("unused")
@@ -290,7 +305,7 @@ public class Query {
 				cnct.commit();
 				return ret;}else {cnct.commit(); return -1;}
 		}
-		catch( SQLException e ) { e.printStackTrace();return -1; }
+		catch( SQLException e ) { e.printStackTrace(System.out);return -1; }
 	}
 
 }

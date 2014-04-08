@@ -22,7 +22,7 @@ public class CreateDB {
 					+ ")");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 		
 		//putter eksempeldata inn i files
@@ -39,7 +39,7 @@ public class CreateDB {
 			System.out.println( "xp_tag table created" );
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 
 		//ny relations tabell
@@ -50,7 +50,7 @@ public class CreateDB {
 			System.out.println( "relation table created" );
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 
 		/*TRENGER VI DISSE?		
