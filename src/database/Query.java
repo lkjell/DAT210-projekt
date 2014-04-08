@@ -50,9 +50,8 @@ public class Query {
 	private Connection cnct;
 	private Statement  stmt;
 
-	public void notMain() throws SQLException{
+	public void printDatabase() throws SQLException{
 		Statement statement = cnct.createStatement();
-
 
 		ResultSet resultSetFiles = statement.executeQuery(SELECT_ALL_FILES);
 		ResultSetMetaData resultSetMetaDataFiles = resultSetFiles.getMetaData();

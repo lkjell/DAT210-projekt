@@ -87,7 +87,7 @@ public class MetaNetServer extends Server {
 		CreateDB.main( new String[]{""} );
 		query.addFiles("C:/Users/andreas/Dropbox/Bilder/");
 		//query.removeFile(1);
-		query.notMain( );
+		query.printDatabase();
 		
 	    try {
 			this.start(); // Attempt to bind server to given port
