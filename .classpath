@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="lib/commons-daemon-1.0.15.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-distribution-9.1.1.v20140108/lib/servlet-api-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-distribution-9.1.1.v20140108/lib/jetty-server-9.1.1.v20140108.jar" sourcepath="lib/jetty-distribution-9.1.1.v20140108/lib/jetty-server-9.1.1.v20140108.jar">
+	<classpathentry kind="lib" path="lib/jetty-distribution-9.1.1.v20140108/lib/jetty-server-9.1.1.v20140108.jar" sourcepath="lib/jetty-all-9.1.1.v20140108-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://download.eclipse.org/jetty/stable-9/apidocs/"/>
 		</attributes>

@@ -89,7 +89,7 @@ public class MetaNetServer extends Server {
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFiles(imageDirectory);
+		query.addFilesRegex("jpg|png",imageDirectory );
 		//query.removeFile(1);
 		query.printDatabase();
 		

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.png.PngImageParser;
 import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
 
@@ -85,7 +86,7 @@ public class Query {
 		printTable(resultSetTags, resultSetMetaDataTags);
 
 		//ferdig med transaksjoner
-		cnct.commit();
+		//cnct.commit();
 	}
 
 	//printemetode
@@ -116,7 +117,7 @@ public class Query {
 			ResultSet rs = stmt.executeQuery( String.format( SQL_GETPATH, fileId ));
 			rs.next();
 			String ret = rs.getString(1);
-			cnct.commit();
+			//cnct.commit();
 			return ret; }
 		catch( SQLException e ) { e.printStackTrace(System.out); return null; }
 	}
@@ -145,7 +146,7 @@ public class Query {
 				faen.add(rs.getInt(1));
 			}
 			Integer[] a = faen.toArray(new Integer[1]);
-			cnct.commit();
+			//cnct.commit();
 			return a;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -191,7 +192,9 @@ public class Query {
 		try {
 			updated = formatUpdate( SQL_ADDPATH, path );
 			id = formatQueryInt( SQL_GETFILEID, path );
+			System.out.println("Trying to read file at: " + path);
 			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File( path ));
+			System.out.println("Success! read file at: " + path);
 			if (jpeg == null) return updated;
 			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
 			if (field == null) return updated;
@@ -204,7 +207,7 @@ public class Query {
 		try {
 			ResultSet rs = formatQuery( SQL_GETPATH, 1 );
 			if (rs.next()) { System.out.println( rs.getString( 1 ) ); }
-			cnct.commit();
+			//cnct.commit();
 		} catch (SQLException e) {e.printStackTrace(System.out);}
 		System.out.println( id +" >> "+ path );
 		for( String kw: kws ) { addKeywords( id, kw ); System.out.print( kw +"; " ); }
@@ -219,12 +222,18 @@ public class Query {
 	}
 
 	public int removeFile( int fileId ) {
-		try { int ret = formatUpdate( SQL_REMPATH, fileId ); cnct.commit(); return ret; }
-		catch( SQLException e ) { e.printStackTrace(System.out); return 0; }
+		try { int ret = formatUpdate( SQL_REMPATH, fileId ); 
+		//cnct.commit(); 
+		return ret; 
+		}catch( SQLException e ) { 
+			e.printStackTrace(System.out); 
+			return 0; }
 	}
 
 	public int update( int fileId, String value ) {
-		try { int ret = formatUpdate( SQL_SETPATH, value, fileId ); cnct.commit(); return ret; }
+		try { int ret = formatUpdate( SQL_SETPATH, value, fileId );
+		//cnct.commit(); 
+		return ret; }
 		catch( SQLException e ) { e.printStackTrace(System.out); return 0; }
 	}
 
@@ -244,7 +253,7 @@ public class Query {
 			
 			ResultSet rs = stmt.executeQuery( String.format( SQL_GETKW, fileId));
 			while(rs.next()) arraylist.add(rs.getString(1));
-			cnct.commit();
+			//cnct.commit();
 			String[] ret = new String[arraylist.size()];
 			arraylist.toArray(ret);
 			return ret;
@@ -287,7 +296,7 @@ public class Query {
 			str += i!=0?", ":"" + objs[i].toString();
 		}
 		int a = stmt.executeUpdate( str );
-		cnct.commit(); 
+		//cnct.commit(); 
 		return a;
 
 	}
@@ -299,13 +308,13 @@ public class Query {
 			str += i!=0 ? " AND " : "" + objs[i].toString();
 		}
 		int a = stmt.executeUpdate( str );
-		cnct.commit();
+		//cnct.commit();
 		return a;
 	}
 
 	private int formatUpdate( String sql, Object...objs ) throws SQLException {
 		int a = stmt.executeUpdate( String.format( sql, objs ));
-		cnct.commit();
+		//cnct.commit();
 		return a;
 	}
 	
@@ -319,8 +328,10 @@ public class Query {
 			ResultSet satan = stmt.executeQuery( String.format( sql, objs ));
 			if(satan.next()){
 				int ret = satan.getInt(1); 
-				cnct.commit();
-				return ret;}else {cnct.commit(); return -1;}
+				//cnct.commit();
+				return ret;}else {
+					//cnct.commit(); 
+					return -1;}
 		}
 		catch( SQLException e ) { e.printStackTrace(System.out);return -1; }
 	}
