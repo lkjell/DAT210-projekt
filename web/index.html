@@ -26,8 +26,6 @@
   						<option value="dato">Sorter etter dato</option>
   						<option value="navn">Sorter etter navn</option>
 					</select>
-					<button type="button" onclick="alert('Previous picture')">Forrige</button>
-					<button type="button" onclick="alert('Next picture')">Neste</button>
 				</ul>
 			</div>
 
@@ -42,25 +40,17 @@
 				</div>
 
 				<div class="right"><!--Right wrapper for metadata visning-->
-					metadata visning
+					Metadata visning:
+					<div class="right">
+						<input type="text" size="25" value=""> <button type="button">Lagre</button>
+						</input>
+					</div>
 				</div>
-
 			</div>
-
+				<div>
 			<div class="footer"></div>
 
 		</div>
 
 	</body>
-	<button type="button" onclick="alert('Next picture')">Neste</button>
 </html>
-
-<p>
-{block:PreviousPage}
-<a id="previous_page_link" href="{PreviousPage}">PREVIOUS PAGE</a> 
-{/block:PreviousPage}
-
-{block:NextPage}
-<a id="next_page_link" href="{NextPage}">NEXT PAGE</a>
-{/block:NextPage}
-</p>
