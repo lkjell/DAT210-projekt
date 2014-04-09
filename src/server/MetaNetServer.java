@@ -32,8 +32,8 @@ public class MetaNetServer extends Server {
 	ServerTrayIcon trayicon;
 	final database.Query query = new Query();
 	
-	String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
-	//String imageDirectory = "C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img";
+	//String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
+	String imageDirectory = "C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img";
 
 	
  	public MetaNetServer( Config cnfg ) throws Exception {
@@ -56,7 +56,7 @@ public class MetaNetServer extends Server {
 	    handlers.setHandlers( new Handler[] {
 	    		
 	    		//leverer html
-	    		new HandlerHTML( "web/index.html" , query),
+	    		new HandlerHTML( "web/index.html" ),
 	    		
 	    		//leverer bilder
 	    		imageHandler,	    		 
@@ -80,7 +80,7 @@ public class MetaNetServer extends Server {
 	    ContextHandler ch2 = new ContextHandler();
 	    ch2.setContextPath( "/getTags" );
 	  //ch2.setHandler( new HandlerMetadataRequest() );
-	    ch2.setHandler( new Json(query));
+	    ch2.setHandler( new Json() );
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
 	    contexts.setHandlers( new Handler[]{ omnipotentHandler,  ch2 });
@@ -89,7 +89,7 @@ public class MetaNetServer extends Server {
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
-		query.addFilesRegex("jpg|png",imageDirectory );
+		query.addFilesRegex(".jpg$|.png$|.gif$", imageDirectory);
 		//query.removeFile(1);
 		query.printDatabase();
 		

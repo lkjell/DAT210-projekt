@@ -21,8 +21,10 @@ public class CreateDB {
 					+ "primary key(file_id)"
 					+ ")");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace(System.out);
+			String msg = e.getMessage();
+			if( msg.startsWith( "Table/View 'FILES'" )) {
+				System.out.println( msg );
+			} else e.printStackTrace();
 		}
 		
 		//putter eksempeldata inn i files
@@ -38,8 +40,10 @@ public class CreateDB {
 					+ "tag VARCHAR(255) constraint tag_not_null NOT NULL constraint tag_unique UNIQUE" + ")" );
 			System.out.println( "xp_tag table created" );
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace(System.out);
+			String msg = e.getMessage();
+			if( msg.startsWith( "Table/View 'XP_TAG'" )) {
+				System.out.println( msg );
+			} else e.printStackTrace();
 		}
 
 		//ny relations tabell
@@ -49,8 +53,10 @@ public class CreateDB {
 					+ "xp_tag_ID INT, FOREIGN KEY (xp_tag_ID) REFERENCES xp_tag(xp_tag_ID) ON DELETE CASCADE"+ ")" );
 			System.out.println( "relation table created" );
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace(System.out);
+			String msg = e.getMessage();
+			if( msg.startsWith( "Table/View 'RELATION'" )) {
+				System.out.println( msg );
+			} else e.printStackTrace();
 		}
 
 		/*TRENGER VI DISSE?		

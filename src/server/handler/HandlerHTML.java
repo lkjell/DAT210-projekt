@@ -18,14 +18,14 @@ import database.Query;
 public class HandlerHTML extends AbstractHandler {
 	
 	String htmlPath;
-	Query query;
 	static int antallAccepterteHTMLCall = 0;
 	
-	public HandlerHTML( String path , Query query) { this.htmlPath = path; this.query = query;}
+	public HandlerHTML( String path ) { this.htmlPath = path; }
 	
 	//metode for å klargjøre html til client
 	private String editHTML() throws IOException {
-		Integer[] files_id = query.getAllFileIds();
+		Query q = new Query();
+		Integer[] files_id = q.getAllFileIds();
 
  		Document doc = Jsoup.parse( new File( htmlPath ), "utf-8" );
  		Element images = doc.getElementsByClass( "images" ).first();
