@@ -1,4 +1,4 @@
-<!DOCTYPE=HTML>
+﻿<!DOCTYPE=HTML>
 
 <html>
 	<head>
@@ -21,12 +21,23 @@
 		<div class="pagecontainer"><!--Div Container for å sentrere alt inni-->
 
 			<div class="header">
-				<ul class="toolbar">
-					<li>File</li>
-					<li>Edit</li>
-					<li>View</li>
-					<li>osv</li>
+				<ul id="sddm">
+				    <li><a href="#" 
+				        onmouseover="mopen('m1')" 
+				        onmouseout="mclosetime()">File</a>
+				        <div id="m1" 
+				            onmouseover="mcancelclosetime()" 
+				            onmouseout="mclosetime()">
+				        <form name="form1" action="" method="post" enctype="multipart/form-data">
+							<input type="file" name="userfile1">
+							<input type="submit" value="Upload">
+						</form>
+				        </div>
+				    </li>
+				    <li><a href="#">View</a></li>
+				    <li><a href="#">About</a></li>
 				</ul>
+			<div style="clear:both"></div>
 			</div>
 
 			<div class="body">

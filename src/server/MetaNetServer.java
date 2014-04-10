@@ -60,6 +60,9 @@ public class MetaNetServer extends Server {
 	    		//leverer bilder
 	    		imageHandler,	    		 
 	    		
+	    		//takler upload
+	    		new FileUploadHandler(),
+	    		
 	    		//leverer web docs
 	    		webDirHandler, 
 	    		
@@ -68,6 +71,7 @@ public class MetaNetServer extends Server {
 	    ContextHandler omnipotentHandler = new ContextHandler();
 	    omnipotentHandler.setContextPath( "/" );
 	    omnipotentHandler.setHandler( handlers );
+
 	    
 //	    
 //	    ResourceHandler rh1 = new ResourceHandler();
