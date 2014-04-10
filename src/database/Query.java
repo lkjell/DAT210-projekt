@@ -26,15 +26,18 @@ public class Query {
 	private static final String SQL_GET_ALL_FILE_ID = "SELECT file_id FROM files";
 	private static final String SQL_GET_PATH = "SELECT path FROM files WHERE file_id = ?";
 	private static final String SQL_SELECT_PATH = "SELECT * FROM files WHERE files.path = ?";
+	private static final String SQL_ADD_PATH = "INSERT INTO files(path) VALUES(?)";
 	private static final String SQL_SET_PATH = "UPDATE files SET path = ? WHERE file_ID = ?";
 	private static final String SQL_REMOVE_PATH = "DELETE FROM files WHERE file_ID = ?";
 
 	// Table: relation [ file_id, xp_tag_id ]
 	private static final String SQL_GET_RELATION = "SELECT * from relation WHERE file_id = ? AND xp_tag_id = ?";
+	private static final String SQL_ADD_RELATION = "INSERT INTO relation(file_id, xp_tag_id) VALUES(?,?)";
 
 	// Table: xp_tag [ xp_tag_id, tag ]
-	public static final String SQL_GET_KEYWORDS = "SELECT xp_tag.tag FROM relation, xp_tag WHERE relation.file_id = ? AND relation.xp_tag_id = xp_tag.xp_tag_id";
+	private static final String SQL_GET_KEYWORDS = "SELECT xp_tag.tag FROM relation, xp_tag WHERE relation.file_id = ? AND relation.xp_tag_id = xp_tag.xp_tag_id";
 	private static final String SQL_GET_KEYWORD = "SELECT * FROM xp_tag WHERE tag = ?";
+	private static final String SQL_ADD_KEYWORD = "INSERT INTO xp_tag(tag) VALUES(?)";
 	private static final String SQL_REMOVE_KEYWORD = "DELETE FROM xp_tag WHERE tag = ?";
 
 	private static final String SELECT_ALL_FILES = "select * from files";
@@ -64,12 +67,15 @@ public class Query {
 
 	//constructor
 	public Query() {
-		try {
-			connection = DriverManager.getConnection(JDBC_URL);
-		} catch( SQLException e ) { e.printStackTrace(); }
+		try { connection = DriverManager.getConnection(JDBC_URL); }
+		catch( SQLException e ) { e.printStackTrace(); }
+	}
+	
+	protected void finalize() {
+		try { connection.close(); }
+		catch( SQLException e ) { e.printStackTrace(); }
 	}
 
-	//henter hele databasen og printer
 	/**
 	 * Queries the entire MetaDatabase and prints every table with printTable
 	 * @throws SQLException if connection was not successfull
@@ -138,16 +144,12 @@ public class Query {
 	public String getPath( int fileId ) {
 		PreparedStatement ps = null;
 		try {
-			ps = connection.prepareStatement( SQL_GET_PATH ,
-					PreparedStatement.RETURN_GENERATED_KEYS);
+			ps = connection.prepareStatement( SQL_GET_PATH );
 			return selectString( ps, new Integer( fileId ) );
 		} catch( SQLException e ) {
 			e.printStackTrace( System.out );
 			return null;
-		} finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		} finally { closeStatements( ps ); }
 	}
 
 	/**
@@ -162,14 +164,10 @@ public class Query {
 		ArrayList<String> al = new ArrayList<>();
 		PreparedStatement ps = null;
 		try {
-			ps = connection.prepareStatement( SQL_GET_PATH ,
-					PreparedStatement.RETURN_GENERATED_KEYS);
+			ps = connection.prepareStatement( SQL_GET_PATH );
 			for( int id : fileId ) al.add( selectString( ps, new Integer( id )));
 		} catch (SQLException e) { e.printStackTrace(); }
-		finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		finally { closeStatements( ps ); }
 		return (String[]) al.toArray();
 	}
 
@@ -181,19 +179,18 @@ public class Query {
 	 *@see removeFiles
 	 *@see update
 	 */
-	public int addFiles( String... paths ) {
+	public int addFiles( String... paths ) { return addFiles( true, paths ); }
+	public int addFiles( boolean incSubDir, String... paths ) {
 		for( String path : paths ) log.info( "Adding files from "+ path );
 		int added = 0;
-		PreparedStatement ps = null;
+		PreparedStatement psSelect = null;
+		PreparedStatement psInsert = null;
 		try {
-			ps = connection.prepareStatement( SQL_SELECT_PATH,
-					Statement.RETURN_GENERATED_KEYS,
-					ResultSet.CONCUR_UPDATABLE,
-					ResultSet.TYPE_SCROLL_SENSITIVE);
-			for( String path : paths ) added += addFiles( ps, new File( path ), true );
+			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
+			psInsert = connection.prepareStatement( SQL_ADD_PATH, Statement.RETURN_GENERATED_KEYS );
+			for( String path : paths ) added += addFiles( psSelect, psInsert, new File( path ), incSubDir );
 		} catch (SQLException e) { e.printStackTrace(); return added; }
-		try { if( ps != null ) connection.commit(); ps.close(); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		closeStatements( psSelect, psInsert );
 		return added;
 	}
  
@@ -207,12 +204,12 @@ public class Query {
 	 * @return
 	 * @see addFilesRegex
 	 */
-	private int addFiles( PreparedStatement ps, File file, boolean subdir ) {
+	private int addFiles( PreparedStatement psSelect, PreparedStatement psInsert, File file, boolean subdir ) {
 		int added = 0;
 		if( file.isDirectory() && subdir )
-			for( File each : file.listFiles() ) added += addFiles( ps, each, subdir );
+			for( File each : file.listFiles() ) added += addFiles( psSelect, psInsert, each, subdir );
 		else if( file.isFile() )
-			return addPath( ps, file.getPath() );
+			return addPath( psSelect, psInsert, file.getPath() );
 		return added;
 	}
 
@@ -233,25 +230,25 @@ public class Query {
 		for( String path : paths ) System.out.println( "Adding files from "+ path );
 		int added = 0;
 		Pattern pattern = Pattern.compile( regex );
-		PreparedStatement ps = null;
-		try { ps = connection.prepareStatement( SQL_SELECT_PATH,
-				Statement.RETURN_GENERATED_KEYS,
-				ResultSet.CONCUR_UPDATABLE,
-				ResultSet.TYPE_SCROLL_SENSITIVE);}
+		PreparedStatement psSelect = null;
+		PreparedStatement psInsert = null;
+		try {
+			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
+			psInsert = connection.prepareStatement( SQL_ADD_PATH, Statement.RETURN_GENERATED_KEYS );
+		}
 		catch (SQLException e) { e.printStackTrace(); return added; }
-		for( String path : paths ) added += addFilesRegex( ps, pattern, new File( path ), true );
-		try { if( ps != null ) ps.close(); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		for( String path : paths ) added += addFilesRegex( psSelect, psInsert, pattern, new File( path ), true );
+		closeStatements( psSelect, psInsert );
 		return added;
 	}
 
-	private int addFilesRegex( PreparedStatement ps, Pattern regex, File file, boolean subdir ) {
+	private int addFilesRegex( PreparedStatement psSelect, PreparedStatement psInsert, Pattern regex, File file, boolean subdir ) {
 		int added = 0;
 		if( file.isDirectory() && subdir ) {
-			for( File each : file.listFiles() ) added += addFilesRegex( ps, regex, each, subdir );
+			for( File each : file.listFiles() ) added += addFilesRegex( psSelect, psInsert, regex, each, subdir );
 		} else if( file.isFile() ) {
 			String path = file.getPath();
-			if ( regex.matcher( path ).find() ) return addPath( ps, path );
+			if ( regex.matcher( path ).find() ) return addPath( psSelect, psInsert, path );
 			else log.warn( "path did not satisfy regex: "+ path );
 			System.out.println( "path did not satisfy regex: "+ path );
 		}
@@ -266,24 +263,13 @@ public class Query {
 	 * @param path Path to insert into database
 	 * @return
 	 */
-	private int addPath( PreparedStatement ps, String path ) { 
+	private int addPath( PreparedStatement psSelect, PreparedStatement psInsert, String path ) {
+		System.out.println( "addpath "+ path );
 		int updated = 0;
 		try {
-			int id = 0;
-			ps.setString( 1, path );
-			ResultSet rs = ps.executeQuery();
-			if ( rs.next() ) {
-				id = rs.getInt( 1 );
-			} else {
-				rs.moveToInsertRow();
-				rs.updateString( 2, path );
-				rs.insertRow();
-				updated++;
-				rs = ps.getGeneratedKeys();
-				if (rs == null)return updated;
-				rs.next();
-				id = rs.getInt(1);
-			}
+			psSelect.setString( 1, path );
+			psInsert.setString( 1, path );
+			int id = insertIfNotExist( psSelect, psInsert );
 			String[] keywords = FileMetadataUtil.getXPKeywords( path );
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
@@ -293,7 +279,21 @@ public class Query {
 		} catch( SQLException e ) { e.printStackTrace(System.out); return updated; }
 		return updated; // updated rows in db
 	}
-
+	
+	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
+		int id;
+		ResultSet rs = psSelect.executeQuery();
+		if( rs.next() ) { // if exists in database
+			id = rs.getInt( 1 );
+		} else {
+			rs.close();
+			psInsert.executeUpdate();
+			rs = psInsert.getGeneratedKeys();
+			rs.next();
+			id = rs.getInt( 1 );
+		}
+		return id;
+	}
 	
 	/**
 	 * Joins one or more strings into one string with a delimiter.
@@ -332,10 +332,7 @@ public class Query {
 			}
 			return removed;
 		} catch ( SQLException e ) { e.printStackTrace(); return removed; }
-		finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		finally { closeStatements( ps ); }
 	}
 
 	/**
@@ -355,10 +352,7 @@ public class Query {
 			ps.setInt( 2, fileId );
 			ps.executeUpdate();
 		} catch ( SQLException e ) { e.printStackTrace(); }
-		finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		finally { closeStatements( ps ); }
 	}
 
 	
@@ -377,10 +371,7 @@ public class Query {
 		} catch ( SQLException e ) {
 			e.printStackTrace(); 
 			return new Integer[0];
-		} finally {
-			try { if( statement != null ) statement.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		} finally { closeStatements( statement ); }
 	}
 
 	/**
@@ -399,15 +390,12 @@ public class Query {
 		catch( SQLException e ) {
 			e.printStackTrace();
 			return null;
-		} finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		} finally { closeStatements( ps ); }
 	}
 
-	
 	/**
-	 * Adds one or more keywords to specified file in relations and stores the keyword in the keywords table.
+	 * Adds one or more keywords to specified file and, if the keyword is not in database,
+	 * stores the keyword in the keywords table.
 	 * @param fileId The ID of the file.
 	 * @param keywords The keyword to be added.
 	 * @return The amount of updates to the database(
@@ -415,62 +403,33 @@ public class Query {
 	 * @see removeKeywords
 	 * 
 	 */
-	public int addKeywords( int fileId, String...keywords ) { 
+	public int addKeywords( int fileId, String...keywords ) {
 		int updated = 0;
 		if (fileId == 0) return updated;
 		PreparedStatement psGetKeyword = null;
-		PreparedStatement psGetRelation = null;
+		PreparedStatement psAddKeyword = null;
+		PreparedStatement psAddRelation = null;
 		try { // start try
-
-
-			psGetKeyword = connection.prepareStatement( SQL_GET_KEYWORD,
-					PreparedStatement.RETURN_GENERATED_KEYS,
-					ResultSet.TYPE_SCROLL_SENSITIVE,
-					ResultSet.CONCUR_UPDATABLE);
-			psGetRelation = connection.prepareStatement( SQL_GET_RELATION ,
-					PreparedStatement.RETURN_GENERATED_KEYS,
-					ResultSet.TYPE_SCROLL_SENSITIVE,
-					ResultSet.CONCUR_UPDATABLE);
-			psGetRelation.setInt( 1, fileId);
-			for( String kw: keywords ) {// start for
-				if (kw == null || kw.isEmpty()) continue;
-				int kwId = 0;
-				psGetKeyword.setString(1, kw);
-				ResultSet rs = psGetKeyword.executeQuery();
-				if ( rs.next() ) {
-					kwId = rs.getInt( 1 );
-				} else {
-
-					rs.moveToInsertRow();
-					rs.updateString( 2, kw );
-					rs.insertRow();
-					updated++; // TODO: log
-					rs.last();
-					kwId = rs.getInt( 1 );
-				}
-
-				psGetRelation.setInt( 2, kwId);
-				rs = psGetRelation.executeQuery();
-				if (!rs.next()) {
-					rs.moveToInsertRow();
-					rs.updateInt(1, fileId);
-					rs.updateInt( 2, kwId );
-					System.out.println(fileId + " " + kwId);
-					rs.insertRow();	
-					updated++; // TODO: log
-				}
+			psGetKeyword = connection.prepareStatement( SQL_GET_KEYWORD );
+			psAddKeyword = connection.prepareStatement( SQL_ADD_KEYWORD, Statement.RETURN_GENERATED_KEYS );
+			psAddRelation = connection.prepareStatement( SQL_ADD_RELATION );
+			psAddRelation.setInt( 1, fileId );
+			for( String kw: keywords ) { // start for
+				if ( kw == null ) continue;
+				kw = kw.trim();
+				if ( kw.isEmpty() ) continue;
+				psGetKeyword.setString( 1, kw );
+				psAddKeyword.setString( 1, kw );
+				int kwId = insertIfNotExist( psGetKeyword, psAddKeyword );
+				psAddRelation.setInt( 2, kwId );
+				try { psAddRelation.executeUpdate(); } catch (Exception e) { e.printStackTrace(); }
 
 			}//end for
 
 		}//end try
 		catch ( SQLException e ) {
 			e.printStackTrace();
-		} finally {
-			try { if( psGetKeyword != null ) psGetKeyword.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-			try { if( psGetRelation != null ) psGetRelation.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		} finally { closeStatements( psGetKeyword, psAddRelation ); }
 		return updated;
 	}
 
@@ -488,17 +447,14 @@ public class Query {
 		PreparedStatement ps = null;
 		try {
 			ps = connection.prepareStatement( SQL_REMOVE_KEYWORD ,
-					PreparedStatement.RETURN_GENERATED_KEYS);
+					PreparedStatement.RETURN_GENERATED_KEYS );
 			for( String kw : keywords ) {
 				ps.setString( 1, kw );
 				removed += ps.executeUpdate();
 			}
 			return removed;
 		} catch ( SQLException e ) { e.printStackTrace(); return removed; }
-		finally {
-			try { if( ps != null ) ps.close(); }
-			catch( SQLException e ) { e.printStackTrace(); }
-		}
+		finally { closeStatements( ps ); }
 	}
 
 	/*public ResultSet search( String conditions ) {
@@ -597,5 +553,13 @@ public class Query {
 			i++;
 		}
 		return ps.executeUpdate();
+	}
+	
+	private void closeStatements( Statement...statements ) {
+		for ( Statement s : statements ) {
+			if( s != null )
+				try { s.close(); }
+				catch( SQLException e ) { e.printStackTrace(); }
+		}
 	}
 }
