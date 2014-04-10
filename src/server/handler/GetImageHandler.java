@@ -23,12 +23,9 @@ import database.Query;
  */
 public class GetImageHandler extends AbstractHandler {
 
-	Query query;
-
 	//constructor
-	public GetImageHandler(Query query) {
+	public GetImageHandler() {
 		super();
-		this.query = query;
 	}
 
 	@Override
@@ -59,7 +56,7 @@ public class GetImageHandler extends AbstractHandler {
 		} 
 		
 		//henter filen ved hjelp av databasen
-		File image = query.getFile(fileId);
+		File image = new Query().getFile( fileId );
 		System.out.println("database lookup done");
 		
 		//bytearray for å holde bildet

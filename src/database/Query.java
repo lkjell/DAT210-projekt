@@ -33,7 +33,8 @@ public class Query {
 	// Table: relation [ file_id, xp_tag_id ]
 	private static final String SQL_GET_RELATION = "SELECT * from relation WHERE file_id = ? AND xp_tag_id = ?";
 	private static final String SQL_ADD_RELATION = "INSERT INTO relation(file_id, xp_tag_id) VALUES(?,?)";
-
+//	private static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
+	
 	// Table: xp_tag [ xp_tag_id, tag ]
 	private static final String SQL_GET_KEYWORDS = "SELECT xp_tag.tag FROM relation, xp_tag WHERE relation.file_id = ? AND relation.xp_tag_id = xp_tag.xp_tag_id";
 	private static final String SQL_GET_KEYWORD = "SELECT * FROM xp_tag WHERE tag = ?";
@@ -44,30 +45,15 @@ public class Query {
 	private static final String SELECT_ALL_RELATIONS = "select * from relation";
 	private static final String SELECT_ALL_TAGS = "select * from xp_tag";
 
-	//	private static final String SQL_GETFILEID = "SELECT file_id FROM files WHERE path = '%s'";
-	//
-	//	private static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
-	//
-	//	private static final String SQL_GET_XP_TAG_ID = "SELECT xp_tag_ID FROM xp_tag WHERE tag = '%s'";
-	//	private static final String SQL_ADD_XP_TAG = "INSERT INTO xp_tag (tag) VALUES('%s')";
-	//	private static final String SQL_SET_XP_TAG = "UPDATE xp_tag SET tag = '%s' WHERE tag = '%s'";
-	//	private static final String SQL_DELETE_XP_TAG = "DELETE FROM xp_tag WHERE tag = %s";
-
-	//	private static final int XPKEYWORDS_ID = 0x00009C9E;
-	//
-	//	public static final String SQL_GETTAG = "SELECT tag_title FROM tags WHERE tag_ID = %s";
-	//	public static final String SQL_SETTAG = "UPDATE tags SET tag_title = '%s' WHERE tag_ID = %s";
-	//	public static final String SQL_ADDTAG = "INSERT INTO tags(tag_title) VALUES('%s')";
-	//	public static final String SQL_REMTAG = "DELETE FROM tags WHERE tag_ID = %s";
+//	private static final int XPKEYWORDS_ID = 0x00009C9E;
 
 	public static final String JDBC_URL = "jdbc:derby:MetaDB;create=true";
 	private static Logger log = LogManager.getLogger();
-
 	private static Connection connection;
 
 	//constructor
 	public Query() {
-		try { connection = DriverManager.getConnection(JDBC_URL); }
+		try { connection = DriverManager.getConnection( JDBC_URL ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
 	
@@ -128,9 +114,6 @@ public class Query {
 		System.out.println("");
 	}
 
-	//henter filepath og lager file object av den
-
-	
 	/**
 	 * Queries the database for the path of a file with the fileId
 	 * @param fileId The fileId in the database
@@ -168,7 +151,7 @@ public class Query {
 			for( int id : fileId ) al.add( selectString( ps, new Integer( id )));
 		} catch (SQLException e) { e.printStackTrace(); }
 		finally { closeStatements( ps ); }
-		return (String[]) al.toArray();
+		return al.toArray(new String[0]);
 	}
 
 	/**
@@ -194,7 +177,6 @@ public class Query {
 		return added;
 	}
  
-	
 	/**
 	 * @deprecated use addFilesRegex
 	 * 
@@ -213,7 +195,6 @@ public class Query {
 		return added;
 	}
 
-	
 	/**
 	 * 
 	 * Adds files to database and calls addKeywords to extract tags.
@@ -254,7 +235,6 @@ public class Query {
 		}
 		return added;
 	}
-
 	
 	/**
 	 * Inserts a path into the database. This acts as the file in the database because the actual binary file is not stored in the database.
@@ -280,21 +260,6 @@ public class Query {
 		return updated; // updated rows in db
 	}
 	
-	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
-		int id;
-		ResultSet rs = psSelect.executeQuery();
-		if( rs.next() ) { // if exists in database
-			id = rs.getInt( 1 );
-		} else {
-			rs.close();
-			psInsert.executeUpdate();
-			rs = psInsert.getGeneratedKeys();
-			rs.next();
-			id = rs.getInt( 1 );
-		}
-		return id;
-	}
-	
 	/**
 	 * Joins one or more strings into one string with a delimiter.
 	 * 
@@ -306,7 +271,7 @@ public class Query {
 		StringBuilder joined = new StringBuilder();
 		boolean first = true;
 		for( String str : strings ) {
-			if( first ) {  first = false; }
+			if( first ) { first = false; }
 			else { joined.append( delimiter ); }
 			joined.append( str );
 		}
@@ -355,7 +320,6 @@ public class Query {
 		finally { closeStatements( ps ); }
 	}
 
-	
 	/**
 	 * Gets the id's of all the files in the database.
 	 * @return A integer array of all the file id's.
@@ -408,11 +372,14 @@ public class Query {
 		if (fileId == 0) return updated;
 		PreparedStatement psGetKeyword = null;
 		PreparedStatement psAddKeyword = null;
+		PreparedStatement psGetRelation = null;
 		PreparedStatement psAddRelation = null;
 		try { // start try
 			psGetKeyword = connection.prepareStatement( SQL_GET_KEYWORD );
 			psAddKeyword = connection.prepareStatement( SQL_ADD_KEYWORD, Statement.RETURN_GENERATED_KEYS );
+			psGetRelation = connection.prepareStatement( SQL_GET_RELATION );
 			psAddRelation = connection.prepareStatement( SQL_ADD_RELATION );
+			psGetRelation.setInt( 1, fileId );
 			psAddRelation.setInt( 1, fileId );
 			for( String kw: keywords ) { // start for
 				if ( kw == null ) continue;
@@ -421,19 +388,16 @@ public class Query {
 				psGetKeyword.setString( 1, kw );
 				psAddKeyword.setString( 1, kw );
 				int kwId = insertIfNotExist( psGetKeyword, psAddKeyword );
+				psGetRelation.setInt( 2, kwId );
 				psAddRelation.setInt( 2, kwId );
-				try { psAddRelation.executeUpdate(); } catch (Exception e) { e.printStackTrace(); }
-
+				insertIfNotExist( psGetRelation, psAddRelation );
 			}//end for
-
 		}//end try
 		catch ( SQLException e ) {
 			e.printStackTrace();
 		} finally { closeStatements( psGetKeyword, psAddRelation ); }
 		return updated;
 	}
-
-
 	
 	/**
 	 * Removes the specified (one or more) keywords from the database.
@@ -506,7 +470,21 @@ public class Query {
 		connection.commit();
 		return a;
 	}*/
-
+	
+	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
+		int id = -1;
+		ResultSet rs = psSelect.executeQuery();
+		if( rs.next() ) { // if exists in database
+			id = rs.getInt( 1 );
+		} else {
+			rs.close();
+			psInsert.executeUpdate();
+			rs = psInsert.getGeneratedKeys();
+			if ( rs != null && rs.next() ) id = rs.getInt( 1 );
+		}
+		return id;
+	}
+	
 	@SuppressWarnings("unused")
 	private int selectInt( PreparedStatement ps, Object...args ) throws SQLException {
 		ResultSet rs = exeQuery( ps, args );
@@ -532,7 +510,7 @@ public class Query {
 		ArrayList<String> al = new ArrayList<>();
 		ResultSet rs = exeQuery( ps, args );
 		while( rs.next() ) al.add( rs.getString( 1 ));
-		return (String[]) al.toArray();
+		return al.toArray(new String[0]);
 	}
 
 	private ResultSet exeQuery( PreparedStatement ps, Object...args ) throws SQLException {

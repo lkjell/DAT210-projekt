@@ -30,7 +30,6 @@ public class MetaNetServer extends Server {
 	public static final int DEFAULT_PORT = 8080;
 	Config cnfg;
 	ServerTrayIcon trayicon;
-	final database.Query query = new Query();
 	
 	String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
 	//String imageDirectory = "C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img";
@@ -49,7 +48,7 @@ public class MetaNetServer extends Server {
 	    webDirHandler.setResourceBase( cnfg.webDir );
 	    
 	    
-	    GetImageHandler imageHandler = new GetImageHandler(query);
+	    GetImageHandler imageHandler = new GetImageHandler();
 	    
 	    //
 	    HandlerList handlers = new HandlerList();
@@ -89,9 +88,11 @@ public class MetaNetServer extends Server {
 		trayicon = new ServerTrayIcon( this );
 		
 		CreateDB.main( new String[]{""} );
+		Query query = new Query();
 		query.addFilesRegex(".jpg$|.png$|.gif$", imageDirectory);
 		//query.removeFile(1);
 		query.printDatabase();
+		query = null;
 		
 	    try {
 			this.start(); // Attempt to bind server to given port
