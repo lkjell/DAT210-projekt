@@ -16,6 +16,7 @@ import org.jsoup.nodes.Element;
 import database.Query;
 
 public class HandlerHTML extends AbstractHandler {
+	//TODO: cookies 
 	
 	String htmlPath;
 	static int antallAccepterteHTMLCall = 0;
