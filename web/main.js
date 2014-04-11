@@ -60,7 +60,10 @@ $( function() {
                 if(window.getSelection) window.getSelection().removeAllRanges();
             }
 
-imgs=Array(1,2,3,4,5);
+$(".image").each(function(){
+	$(this).attr("id")
+}
+
 var i=0;
 document.onkeydown = checkKey;
 function checkKey(e) {
