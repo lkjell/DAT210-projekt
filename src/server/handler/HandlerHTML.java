@@ -65,21 +65,25 @@ public class HandlerHTML extends AbstractHandler {
 	public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
 	        throws IOException, ServletException {
 
+		int id = Thread.currentThread().hashCode();;
 		String uri = baseRequest.getRequestURI();
 		
 		// Hvis ikke foerste request, send til neste handler.
-		if ( !uri.equals( "/" )) { 
-			System.out.println("Uri ikke acceptert: " + uri);
+		String contentType = request.getContentType();
+		if ( !uri.equals( "/" ) || contentType != null && !contentType.contains( "text/html" )) { 
+			System.out.println(id +" Uri ikke acceptert: " + uri);
 			return; }
+		System.out.println(id +" Entrer " + this.getClass() + " :" + baseRequest.getRequestURI());
 		
 		antallAccepterteHTMLCall++;
 
-		System.out.println("Uri acceptert: " + uri);
+		System.out.println(id +" Uri acceptert: " + uri);
 		
-		System.out.println("antallAccepterteHTMLCall: " + antallAccepterteHTMLCall);
+		System.out.println(id +" antallAccepterteHTMLCall: " + antallAccepterteHTMLCall);
 	    response.setContentType("text/html;charset=utf-8");
 	    response.setStatus(HttpServletResponse.SC_OK);
 	    baseRequest.setHandled(true);
 	    response.getWriter().println( editHTML() );
+	    System.out.println(id +" forlater " + this.getClass() + " :" + baseRequest.getRequestURI());
 	}
 }

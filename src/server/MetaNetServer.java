@@ -43,8 +43,6 @@ public class MetaNetServer extends Server {
  		
  		//handler requests for alle filene webIndex spesifiserer (ie stylesheet.css)
 	    ResourceHandler webDirHandler = new ResourceHandler();
-	    webDirHandler.setDirectoriesListed( true );
-	    webDirHandler.setWelcomeFiles( new String[] { cnfg.webIndex });
 	    webDirHandler.setResourceBase( cnfg.webDir );
 	    
 	    

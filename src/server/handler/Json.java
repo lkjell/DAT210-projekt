@@ -1,6 +1,7 @@
 package server.handler;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,9 +16,11 @@ public class Json extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseReq, HttpServletRequest req,
 			HttpServletResponse rsp) throws IOException, ServletException {
+		
+		int id = Thread.currentThread().hashCode();;
 		String method = req.getMethod();
 		if( method.equals( "GET" )) {
-			
+			System.out.println(id +" Entrer " + this.getClass() + " :" + baseReq.getRequestURI());
 			// http://shiflett.org/blog/2011/may/the-accept-header
 			// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
 			// http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
@@ -31,7 +34,7 @@ public class Json extends AbstractHandler {
 				String img_id = req.getParameter( "img_id" );
 				if( img_id != null ) {
 					String[] kw = null;
-					try { System.out.println("img_id i json :" + img_id);
+					try { System.out.println(id +" img_id i json :" + img_id);
 						Query q = new Query();
 						kw = q.getKeywords( Integer.parseInt( img_id ));
 					}
@@ -50,13 +53,16 @@ public class Json extends AbstractHandler {
 			} else {
 				System.out.println( "Unknown Accept header in GET request: \""+ accept +"\"" );
 			}
-			
-		} else if( method.equals( "POST" )) {
+			System.out.println(id +" forlater " + this.getClass() + " :" + baseReq.getRequestURI());
+		} 
+		
+		
+		/*else if( method.equals( "POST" )) {
 			
 		} else if( method.equals( "PUT" )) {
 			
 		} else if( method.equals( "DELETE" )) {
 			
-		}
+		}*/
 	}
 }

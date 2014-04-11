@@ -6,7 +6,6 @@ $( function() {
 		function() { this.style.zIndex = '2'; }, // mouse enter
 		function() { this.style.zIndex = '1'; }  // mouse leave
 	);
-<<<<<<< HEAD
 
 	$( ".image" ).click(function(){
 		requestMetadata($( this ).attr( "id" ));

@@ -32,13 +32,19 @@ public class GetImageHandler extends AbstractHandler {
 	public void handle(String target, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response)
 					throws IOException, ServletException {
+		int id = Thread.currentThread().hashCode();;
 		// Hvis ikke foerste request, send til neste handler.
 		if ( !baseRequest.getRequestURI().startsWith("/img/")) {
-			System.out.println("en fil med feil path " +baseRequest.getRequestURI());return; 
+			System.out.println(id +" en fil med feil path " +baseRequest.getRequestURI());return; 
 			}
 		
+		
+		System.out.println(id + " Entrer " + this.getClass() + " :" + baseRequest.getRequestURI());
+		
+		
+		
 		//mappe funnet
-		System.out.println("img dir found");
+		System.out.println(id +" img dir found");
 		
 		
 		String imageExtension = null;
@@ -48,16 +54,16 @@ public class GetImageHandler extends AbstractHandler {
 		//hente fil id fra requesten mottat
 		try {
 			fileId = Integer.parseInt(request.getParameter("img_id"));
-			System.out.println("parse filid success! result: " + fileId);
+			System.out.println(id +" parse filid success! result: " + fileId);
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace(); System.err.println("id er ikke int!?" + " file id:" + fileId + request.getRequestURL());
+			e.printStackTrace(); System.out.println(id +" id er ikke int!?" + " file id:" + fileId + request.getRequestURL());
 			return;
 		} 
 		
 		//henter filen ved hjelp av databasen
 		File image = new Query().getFile( fileId );
-		System.out.println("database lookup done");
+		System.out.println(id +" database lookup done");
 		
 		//bytearray for å holde bildet
 		b = new byte[(int)image.length()];
@@ -69,7 +75,7 @@ public class GetImageHandler extends AbstractHandler {
 		
 		FileInputStream input = new FileInputStream(image);
 		int antallSkrevet = input.read(b);
-		System.out.println("skrev " + antallSkrevet + " bytes av: "+ imagePath);
+		System.out.println(id +" skrev " + antallSkrevet + " bytes av: "+ imagePath);
 
 		//lager header
 		response.setContentType("image/"+ imageExtension);
@@ -81,5 +87,6 @@ public class GetImageHandler extends AbstractHandler {
 		os.write(b);
 		os.flush();
 		input.close();
+		System.out.println(id +" forlater " + this.getClass() + " :" + baseRequest.getRequestURI());
 	}
 }
