@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+/**
+ * @deprecated
+ */
 class HandlerMetadataRequest extends AbstractHandler {
 	
 	public HandlerMetadataRequest() {}

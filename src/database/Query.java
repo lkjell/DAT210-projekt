@@ -1,6 +1,8 @@
 package database;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -8,8 +10,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +30,9 @@ public class Query {
 	// Table: files [ file_id, path ]
 	private static final String SQL_GET_ALL_FILE_ID = "SELECT file_id FROM files";
 	private static final String SQL_GET_PATH = "SELECT path FROM files WHERE file_id = ?";
+	private static final String SQL_GET_FILE = "SELECT * FROM files WHERE file_id = ?";
 	private static final String SQL_SELECT_PATH = "SELECT * FROM files WHERE files.path = ?";
-	private static final String SQL_ADD_PATH = "INSERT INTO files(path) VALUES(?)";
+	private static final String SQL_ADD_FILE = "INSERT INTO files(path,width,height) VALUES(?,?,?)";
 	private static final String SQL_SET_PATH = "UPDATE files SET path = ? WHERE file_ID = ?";
 	private static final String SQL_REMOVE_PATH = "DELETE FROM files WHERE file_ID = ?";
 
@@ -170,7 +176,7 @@ public class Query {
 		PreparedStatement psInsert = null;
 		try {
 			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
-			psInsert = connection.prepareStatement( SQL_ADD_PATH, Statement.RETURN_GENERATED_KEYS );
+			psInsert = connection.prepareStatement( SQL_ADD_FILE, Statement.RETURN_GENERATED_KEYS );
 			for( String path : paths ) added += addFiles( psSelect, psInsert, new File( path ), incSubDir );
 		} catch (SQLException e) { e.printStackTrace(); return added; }
 		closeStatements( psSelect, psInsert );
@@ -191,7 +197,7 @@ public class Query {
 		if( file.isDirectory() && subdir )
 			for( File each : file.listFiles() ) added += addFiles( psSelect, psInsert, each, subdir );
 		else if( file.isFile() )
-			return addPath( psSelect, psInsert, file.getPath() );
+			return addFile( psSelect, psInsert, file, file.getPath() );
 		return added;
 	}
 
@@ -207,15 +213,15 @@ public class Query {
 	 * @see update
 	 */
 	public int addFilesRegex( String regex, String... paths) {
-		for( String path : paths ) log.info( "Adding files from "+ path );
-		for( String path : paths ) System.out.println( "Adding files from "+ path );
+		/*DEBUG*/ for( String path : paths ) log.info( "Adding files from "+ path );
+		/*DEBUG*/ for( String path : paths ) System.out.println( "Adding files from "+ path );
 		int added = 0;
 		Pattern pattern = Pattern.compile( regex );
 		PreparedStatement psSelect = null;
 		PreparedStatement psInsert = null;
 		try {
 			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
-			psInsert = connection.prepareStatement( SQL_ADD_PATH, Statement.RETURN_GENERATED_KEYS );
+			psInsert = connection.prepareStatement( SQL_ADD_FILE, Statement.RETURN_GENERATED_KEYS );
 		}
 		catch (SQLException e) { e.printStackTrace(); return added; }
 		for( String path : paths ) added += addFilesRegex( psSelect, psInsert, pattern, new File( path ), true );
@@ -229,9 +235,10 @@ public class Query {
 			for( File each : file.listFiles() ) added += addFilesRegex( psSelect, psInsert, regex, each, subdir );
 		} else if( file.isFile() ) {
 			String path = file.getPath();
-			if ( regex.matcher( path ).find() ) return addPath( psSelect, psInsert, path );
+			/*DEBUG*/ System.out.println( "file found: "+ path );
+			if ( regex.matcher( path ).find() ) return addFile( psSelect, psInsert, file, path );
 			else log.warn( "path did not satisfy regex: "+ path );
-			System.out.println( "path did not satisfy regex: "+ path );
+			/*DEBUG*/ System.out.println( "\tbut it did not satisfy regex" );
 		}
 		return added;
 	}
@@ -243,9 +250,24 @@ public class Query {
 	 * @param path Path to insert into database
 	 * @return
 	 */
-	private int addPath( PreparedStatement psSelect, PreparedStatement psInsert, String path ) {
+	private int addFile( PreparedStatement psSelect, PreparedStatement psInsert, File file, String path ) {
 		System.out.println( "addpath "+ path );
 		int updated = 0;
+		BufferedImage bi;
+		try {
+			/*DEBUG*/ System.out.println( "addFile BufferedImage: "+ path );
+			bi = ImageIO.read( file );
+			psInsert.setShort( 2, (short) bi.getWidth() );
+			psInsert.setShort( 3, (short) bi.getHeight() );
+			/*DEBUG*/ System.out.println( "Dimensions: "+ bi.getWidth() +" x "+ bi.getHeight() );
+		}
+		catch (IOException | SQLException e) {
+			e.printStackTrace();
+			try {
+				psInsert.setNull( 2, Types.SMALLINT );
+				psInsert.setNull( 3, Types.SMALLINT );
+			} catch (SQLException e1) { e1.printStackTrace(); return 0; }
+		}
 		try {
 			psSelect.setString( 1, path );
 			psInsert.setString( 1, path );
@@ -254,7 +276,7 @@ public class Query {
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
 					"\n\tTags: "+ join( "; ", keywords )) : "" ));
-			System.out.println( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
+			/*DEBUG*/ System.out.println( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
 					"\n\tTags: "+ join( "; ", keywords )) : "" ));
 		} catch( SQLException e ) { e.printStackTrace(System.out); return updated; }
 		return updated; // updated rows in db
@@ -421,6 +443,29 @@ public class Query {
 		finally { closeStatements( ps ); }
 	}
 
+	/**
+	 * @return short[] An array or length 2 containing width and height respectively
+	 */
+	public short[] getDimensions( int fileId ){
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement( SQL_GET_FILE );
+			ps.setInt( 1, fileId );
+			ResultSet rs = ps.executeQuery();
+			short[] dim = new short[2];
+			if( rs.next() ) {
+				dim[0] = rs.getShort( 3 );
+				dim[1] = rs.getShort( 4 );
+			}
+			/*DEBUG*/ System.out.println( "getDimensions: "+ dim[0] +" x "+ dim[1] );
+			return dim;
+		}
+		catch( SQLException e ) {
+			e.printStackTrace();
+			return new short[2];
+		} finally { closeStatements( ps ); }
+	}
+	
 	/*public ResultSet search( String conditions ) {
 
 	StringBuilder sb = new StringBuilder();
@@ -471,6 +516,8 @@ public class Query {
 		return a;
 	}*/
 	
+
+
 	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
 		int id = -1;
 		ResultSet rs = psSelect.executeQuery();
@@ -491,7 +538,7 @@ public class Query {
 		rs.next();
 		return rs.getInt( 1 );
 	}
-
+	
 	@SuppressWarnings("unused")
 	private int selectKey(PreparedStatement ps, Object...args ) throws SQLException {
 		exeUpdate( ps, args );

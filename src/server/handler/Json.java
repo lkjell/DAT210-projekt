@@ -34,17 +34,19 @@ public class Json extends AbstractHandler {
 				String img_id = req.getParameter( "img_id" );
 				if( img_id != null ) {
 					String[] kw = null;
-					try { System.out.println(id +" img_id i json :" + img_id);
-						Query q = new Query();
-						kw = q.getKeywords( Integer.parseInt( img_id ));
-					}
+					int fileId = 0;
+					try { fileId = Integer.parseInt( img_id ); }
 					catch( NumberFormatException e ) { e.printStackTrace(System.out); }
+					/*DEBUG*/ System.out.println( id +" img_id i json :" + img_id );
+					Query q = new Query();
+					kw = q.getKeywords( fileId );
+					short[] dim = q.getDimensions( fileId );
 					StringBuilder kwlist = new StringBuilder();
-					for (int i=0;i<kw.length;i++) {
+					for (int i=0;i<kw.length;i++)
 						kwlist.append((i==0?"": ",")+ "\"" + kw[i] + "\"" );
-					}
-					String jsonString = "{\"XPKeywords\":["+ kwlist +"]}";
-					System.out.println(jsonString);
+					String jsonString = "{\"Dimensions\":["+dim[0]+","+dim[1]
+							+"],\"Keywords\":["+ kwlist +"]}";
+					/*DEBUG*/ System.out.println(jsonString);
 					rsp.getWriter().println( jsonString );
 					baseReq.setContentType("application/json");
 					baseReq.setHandled( true );

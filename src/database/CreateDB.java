@@ -18,6 +18,8 @@ public class CreateDB {
 			connection.createStatement().execute("create table files("
 					+ "file_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) , "
 					+ "path varchar(256) constraint unique_path unique,"
+					+ "width smallint,"
+					+ "height smallint,"
 					+ "primary key(file_id)"
 					+ ")");
 		} catch (Exception e) {

@@ -31,8 +31,8 @@ public class MetaNetServer extends Server {
 	Config cnfg;
 	ServerTrayIcon trayicon;
 	
-	String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
-	//String imageDirectory = "C:/Dropbox/Education/2014-4sem DAT210/EclipseWork/DAT210-prosjekt-gruppe-D/img";
+	//String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
+	String imageDirectory = "C:/Users/Public/Pictures";
 
 	
  	public MetaNetServer( Config cnfg ) throws Exception {
