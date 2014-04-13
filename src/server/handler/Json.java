@@ -39,13 +39,16 @@ public class Json extends AbstractHandler {
 					catch( NumberFormatException e ) { e.printStackTrace(System.out); }
 					/*DEBUG*/ System.out.println( id +" img_id i json :" + img_id );
 					Query q = new Query();
+					String path = q.getPath( fileId ); 
 					kw = q.getKeywords( fileId );
 					short[] dim = q.getDimensions( fileId );
 					StringBuilder kwlist = new StringBuilder();
 					for (int i=0;i<kw.length;i++)
 						kwlist.append((i==0?"": ",")+ "\"" + kw[i] + "\"" );
-					String jsonString = "{\"Dimensions\":["+dim[0]+","+dim[1]
-							+"],\"Keywords\":["+ kwlist +"]}";
+					String jsonString = "{ \"path\": \""+ path +"\""
+							+ ",\n  \"width\": "+ dim[0]
+							+ ",\n  \"height\": "+ dim[1]
+							+ ",\n  \"keywords\": ["+ kwlist +"]}";
 					/*DEBUG*/ System.out.println(jsonString);
 					rsp.getWriter().println( jsonString );
 					baseReq.setContentType("application/json");

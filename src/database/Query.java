@@ -62,7 +62,7 @@ public class Query {
 		try { connection = DriverManager.getConnection( JDBC_URL ); }
 		catch( SQLException e ) { e.printStackTrace(); }
 	}
-	
+
 	protected void finalize() {
 		try { connection.close(); }
 		catch( SQLException e ) { e.printStackTrace(); }
@@ -242,7 +242,7 @@ public class Query {
 		}
 		return added;
 	}
-	
+
 	/**
 	 * Inserts a path into the database. This acts as the file in the database because the actual binary file is not stored in the database.
 	 * 
@@ -281,7 +281,7 @@ public class Query {
 		} catch( SQLException e ) { e.printStackTrace(System.out); return updated; }
 		return updated; // updated rows in db
 	}
-	
+
 	/**
 	 * Joins one or more strings into one string with a delimiter.
 	 * 
@@ -420,7 +420,7 @@ public class Query {
 		} finally { closeStatements( psGetKeyword, psAddRelation ); }
 		return updated;
 	}
-	
+
 	/**
 	 * Removes the specified (one or more) keywords from the database.
 	 * @param keywords The keyword to remove
@@ -457,7 +457,6 @@ public class Query {
 				dim[0] = rs.getShort( 3 );
 				dim[1] = rs.getShort( 4 );
 			}
-			/*DEBUG*/ System.out.println( "getDimensions: "+ dim[0] +" x "+ dim[1] );
 			return dim;
 		}
 		catch( SQLException e ) {
@@ -465,7 +464,7 @@ public class Query {
 			return new short[2];
 		} finally { closeStatements( ps ); }
 	}
-	
+
 	/*public ResultSet search( String conditions ) {
 
 	StringBuilder sb = new StringBuilder();
@@ -515,8 +514,6 @@ public class Query {
 		connection.commit();
 		return a;
 	}*/
-	
-
 
 	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
 		int id = -1;
@@ -531,14 +528,14 @@ public class Query {
 		}
 		return id;
 	}
-	
+
 	@SuppressWarnings("unused")
 	private int selectInt( PreparedStatement ps, Object...args ) throws SQLException {
 		ResultSet rs = exeQuery( ps, args );
 		rs.next();
 		return rs.getInt( 1 );
 	}
-	
+
 	@SuppressWarnings("unused")
 	private int selectKey(PreparedStatement ps, Object...args ) throws SQLException {
 		exeUpdate( ps, args );
@@ -579,7 +576,7 @@ public class Query {
 		}
 		return ps.executeUpdate();
 	}
-	
+
 	private void closeStatements( Statement...statements ) {
 		for ( Statement s : statements ) {
 			if( s != null )
