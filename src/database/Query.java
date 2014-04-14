@@ -54,7 +54,7 @@ public class Query {
 //	private static final int XPKEYWORDS_ID = 0x00009C9E;
 
 	public static final String JDBC_URL = "jdbc:derby:MetaDB;create=true";
-	private static Logger log = LogManager.getLogger();
+	private static Logger log = LogManager.getLogger( "Query" );
 	private static Connection connection;
 
 	//constructor
@@ -235,10 +235,8 @@ public class Query {
 			for( File each : file.listFiles() ) added += addFilesRegex( psSelect, psInsert, regex, each, subdir );
 		} else if( file.isFile() ) {
 			String path = file.getPath();
-			/*DEBUG*/ System.out.println( "file found: "+ path );
 			if ( regex.matcher( path ).find() ) return addFile( psSelect, psInsert, file, path );
 			else log.warn( "path did not satisfy regex: "+ path );
-			/*DEBUG*/ System.out.println( "\tbut it did not satisfy regex" );
 		}
 		return added;
 	}
@@ -251,15 +249,14 @@ public class Query {
 	 * @return
 	 */
 	private int addFile( PreparedStatement psSelect, PreparedStatement psInsert, File file, String path ) {
-		System.out.println( "addpath "+ path );
 		int updated = 0;
 		BufferedImage bi;
 		try {
-			/*DEBUG*/ System.out.println( "addFile BufferedImage: "+ path );
+			//*DEBUG*/ System.out.println( "addFile BufferedImage: "+ path );
 			bi = ImageIO.read( file );
 			psInsert.setShort( 2, (short) bi.getWidth() );
 			psInsert.setShort( 3, (short) bi.getHeight() );
-			/*DEBUG*/ System.out.println( "Dimensions: "+ bi.getWidth() +" x "+ bi.getHeight() );
+			//*DEBUG*/ System.out.println( "Dimensions: "+ bi.getWidth() +" x "+ bi.getHeight() );
 		}
 		catch (IOException | SQLException e) {
 			e.printStackTrace();
@@ -276,8 +273,8 @@ public class Query {
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
 					"\n\tTags: "+ join( "; ", keywords )) : "" ));
-			/*DEBUG*/ System.out.println( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
-					"\n\tTags: "+ join( "; ", keywords )) : "" ));
+			//*DEBUG*/ System.out.println( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
+			//		"\n\tTags: "+ join( "; ", keywords )) : "" ));
 		} catch( SQLException e ) { e.printStackTrace(System.out); return updated; }
 		return updated; // updated rows in db
 	}
