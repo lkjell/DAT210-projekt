@@ -20,8 +20,9 @@ $( function() { // When document is ready
 	$( '.image' ).hover(
 		function() { this.style.zIndex = '2'; }, // mouse enter
 		function() { this.style.zIndex = '1'; }  // mouse leave
-	).click( function() { alert("sending request"); requestMetadata( $( this ).attr( 'id' )); }
-	).dblclick( showLargeImagePanel );
+	).click( function() {
+		updateSidebar( $( this ).attr( 'id' ));
+	}).dblclick( showLargeImagePanel );
 
 	$( '.largeImgPanel' ).dblclick( function() {
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
@@ -32,21 +33,26 @@ function Image( id, metadata ) {
 
 	// private members
 	var _xpkeywords;
+	var that = this;
 
 	function setMetadata( metadata ) {
-		_xpkeywords = metadata.exif.XPKeywords;
-		this.path   = metadata.file.path;
-		this.width  = metadata.image.width;
-		this.height = metadata.image.height;
+		_xpkeywords = metadata.keywords;
+		that.path   = metadata.path;
+		that.width  = metadata.width;
+		that.height = metadata.height;
+		that.uptodate = true;
 	}
 
 	// public members
 	this.id = id;
+	this.uptodate = false;
 	if( metadata != undefined ) setMetadata( metadata );
 
-	this.fetchMetadata = function() {
-		get( "meta{"+ this.id +"}", function( data, status, xhr ) {
-			alert( data );
+	this.fetchMetadata = function( then ) {
+		console.log( "fetching metadata for img "+ this.id );
+		get( "getTags?img_id="+ this.id, function( data, status, xhr ) {
+			setMetadata( data );
+			if ( typeof then == 'function' ) then( data, status, xhr );
 		});
 	}
 
@@ -65,7 +71,9 @@ function Image( id, metadata ) {
 	}
 
 	this.removeKeywords = function( keywords ) {
-		for( var i in arguments ) { if( !( typeof arguments[i] === 'string' )) return; }
+		for( var i in arguments ) {
+			if( !( typeof arguments[i] === 'string' )) return;
+		}
 	}
 
 	imageById[id] = this;
@@ -95,6 +103,21 @@ function post( url, plainObject, success, error ) {
 function search() {}
 
 function sortBy() {}
+
+function updateSidebar( img_id ) {
+	var image = imageById[img_id];
+	if ( !image.uptodate ) image.fetchMetadata( writeIt );
+	else writeIt();
+	function writeIt() {
+		var container = $( '<div>' );
+		container.append(
+			$( '<p>' ).text( "filepath: "+ image.path ),
+			$( '<p>' ).text( "dimensions: "+ image.width +" x "+ image.height ),
+			$( '<p>' ).text( "keywords: "+ image.getKeywords() )
+		);
+		$( ".right" ).html( container );
+	}
+}
 
 function requestMetadata( file_id ) {
 
