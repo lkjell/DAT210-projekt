@@ -39,7 +39,7 @@ public class Json extends AbstractHandler {
 					catch( NumberFormatException e ) { e.printStackTrace(System.out); }
 					/*DEBUG*/ System.out.println( id +" img_id i json :" + img_id );
 					Query q = new Query();
-					String path = q.getPath( fileId ); 
+					String path = q.getPath( fileId ).replace('\\', '/'); 
 					kw = q.getKeywords( fileId );
 					short[] dim = q.getDimensions( fileId );
 					StringBuilder kwlist = new StringBuilder();

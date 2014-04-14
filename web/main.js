@@ -20,7 +20,7 @@ $( function() { // When document is ready
 	$( '.image' ).hover(
 		function() { this.style.zIndex = '2'; }, // mouse enter
 		function() { this.style.zIndex = '1'; }  // mouse leave
-	).click( function() { requestMetadata( $( this ).attr( 'id' )); }
+	).click( function() { alert("sending request"); requestMetadata( $( this ).attr( 'id' )); }
 	).dblclick( showLargeImagePanel );
 
 	$( '.largeImgPanel' ).dblclick( function() {
@@ -34,7 +34,7 @@ function Image( id, metadata ) {
 	var _xpkeywords;
 
 	function setMetadata( metadata ) {
-		_xpkeywords = metadata.exif.XPKeywords
+		_xpkeywords = metadata.exif.XPKeywords;
 		this.path   = metadata.file.path;
 		this.width  = metadata.image.width;
 		this.height = metadata.image.height;
@@ -53,8 +53,8 @@ function Image( id, metadata ) {
 	this.getKeywords = function() { return _xpkeywords;	}
 
 	this.addKeywords = function( keywords ) {
-		for( arg : arguments ) {
-			if( !( typeof arg === 'string' ) || arg in _xpkeywords )
+		for( var i in arguments ) {
+			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
 				return; // TODO: remove instead
 		}
 		post( "meta{"+ this.id +"}", {XPKeywords: arguments},
@@ -65,7 +65,7 @@ function Image( id, metadata ) {
 	}
 
 	this.removeKeywords = function( keywords ) {
-		for( arg : arguments ) { if( !( typeof arg === 'string' )) return; }
+		for( var i in arguments ) { if( !( typeof arguments[i] === 'string' )) return; }
 	}
 
 	imageById[id] = this;
@@ -74,7 +74,7 @@ function Image( id, metadata ) {
 function get( url, success, error ) {
 	$.ajax({
 		url: url,
-		type: 'GET'
+		type: 'GET',
 		dataType: 'json',
 		success: success,
 		error: error
@@ -84,13 +84,17 @@ function get( url, success, error ) {
 function post( url, plainObject, success, error ) {
 	$.ajax({
 		url: url,
-		type: 'POST'
+		type: 'POST',
 		dataType: 'json',
 		data: plainObject,
 		success: success,
 		error: error
 	});
 }
+
+function search() {}
+
+function sortBy() {}
 
 function requestMetadata( file_id ) {
 
