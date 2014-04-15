@@ -17,8 +17,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 
 public class FileUploadHandler extends AbstractHandler {
 
-	private String savePath = "c:\\";
-	private String tempFolder = "c:\\temp";
+	private String savePath = "C:/Users/Public/Pictures/";
+	private String tempFolder = "C:/Users/Public/Pictures/";
 	private File file ;
 
 	@Override
@@ -93,6 +93,7 @@ public class FileUploadHandler extends AbstractHandler {
 		System.out.println(request.toString());
 		response.setContentType("text/html");
 		response.setStatus(HttpServletResponse.SC_OK);
+		baseRequest.setHandled(true);
 		System.out.println(id +" forlater " + this.getClass() + " :" + baseRequest.getRequestURI());
 
 	}

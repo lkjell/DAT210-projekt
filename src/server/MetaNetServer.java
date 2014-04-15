@@ -52,6 +52,7 @@ public class MetaNetServer extends Server {
 	    HandlerList handlers = new HandlerList();
 	    handlers.setHandlers( new Handler[] {
 	    		
+	    		
 	    		//leverer html
 	    		new HandlerHTML( "web/index.html" ),
 	    		
