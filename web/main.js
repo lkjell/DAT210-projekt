@@ -29,6 +29,8 @@ $( function() { // When document is ready
 	});
 });
 
+// Constructor for Image objects
+// all metadata are stored in these objects
 function Image( id, metadata ) {
 
 	// private members
@@ -40,17 +42,17 @@ function Image( id, metadata ) {
 		that.path   = metadata.path;
 		that.width  = metadata.width;
 		that.height = metadata.height;
-		that.uptodate = true;
+		that.hasdata = true;
 	}
 
 	// public members
 	this.id = id;
-	this.uptodate = false;
+	this.hasdata = false;
 	if( metadata != undefined ) setMetadata( metadata );
 
 	this.fetchMetadata = function( then ) {
 		console.log( "fetching metadata for img "+ this.id );
-		get( "getTags?img_id="+ this.id, function( data, status, xhr ) {
+		get( "meta?img_id="+ this.id, function( data, status, xhr ) {
 			setMetadata( data );
 			if ( typeof then == 'function' ) then( data, status, xhr );
 		});
@@ -106,7 +108,7 @@ function sortBy() {}
 
 function updateSidebar( img_id ) {
 	var image = imageById[img_id];
-	if ( !image.uptodate ) image.fetchMetadata( writeIt );
+	if ( !image.hasdata ) image.fetchMetadata( writeIt );
 	else writeIt();
 	function writeIt() {
 		var container = $( '<div>' );

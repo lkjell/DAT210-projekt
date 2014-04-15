@@ -45,20 +45,14 @@ public class MetaNetServer extends Server {
 	    ResourceHandler webDirHandler = new ResourceHandler();
 	    webDirHandler.setResourceBase( cnfg.webDir );
 	    
-	    
-	    GetImageHandler imageHandler = new GetImageHandler();
-	    
 	    //
 	    HandlerList handlers = new HandlerList();
 	    handlers.setHandlers( new Handler[] {
 	    		
 	    		
 	    		//leverer html
-	    		new HandlerHTML( "web/index.html" ),
-	    		
-	    		//leverer bilder
-	    		imageHandler,	    		 
-	    		
+	    		new HtmlHandler( "web/index.html" ),
+
 	    		//takler upload
 	    		new FileUploadHandler(),
 	    		
@@ -70,22 +64,13 @@ public class MetaNetServer extends Server {
 	    ContextHandler omnipotentHandler = new ContextHandler();
 	    omnipotentHandler.setContextPath( "/" );
 	    omnipotentHandler.setHandler( handlers );
-
-	    
-//	    
-//	    ResourceHandler rh1 = new ResourceHandler();
-//	    rh1.setResourceBase( "./img" ); //TODO: Replace with query to database to get specific image path
-//	    ContextHandler ch1 = new ContextHandler();
-//	    ch1.setContextPath( "/img" );
-//	    ch1.setHandler( rh1 );
-//	    
-	    ContextHandler ch2 = new ContextHandler();
-	    ch2.setContextPath( "/getTags" );
-	  //ch2.setHandler( new HandlerMetadataRequest() );
-	    ch2.setHandler( new Json() );
 	    
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers( new Handler[]{ omnipotentHandler,  ch2 });
+	    contexts.setHandlers( new Handler[]{
+	    		omnipotentHandler,
+	    		new MetaDataHandler( "/meta" ),	// Metadata Requests and Updates
+	    		new GetImageHandler( "/img" )	// File Download
+	    });
 	    this.setHandler( contexts );
 	    
 		trayicon = new ServerTrayIcon( this );

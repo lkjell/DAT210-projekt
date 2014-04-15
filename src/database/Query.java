@@ -60,12 +60,12 @@ public class Query {
 	//constructor
 	public Query() {
 		try { connection = DriverManager.getConnection( JDBC_URL ); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		catch( SQLException e ) { log.error( e, e ); }
 	}
 
 	protected void finalize() {
 		try { connection.close(); }
-		catch( SQLException e ) { e.printStackTrace(); }
+		catch( SQLException e ) { log.error( e, e ); }
 	}
 
 	/**
@@ -135,9 +135,7 @@ public class Query {
 		try {
 			ps = connection.prepareStatement( SQL_GET_PATH );
 			return selectString( ps, new Integer( fileId ) );
-		} catch( SQLException e ) {
-			e.printStackTrace( System.out );
-			return null;
+		} catch( SQLException e ) { log.error( e, e ); return null;
 		} finally { closeStatements( ps ); }
 	}
 
@@ -155,7 +153,7 @@ public class Query {
 		try {
 			ps = connection.prepareStatement( SQL_GET_PATH );
 			for( int id : fileId ) al.add( selectString( ps, new Integer( id )));
-		} catch (SQLException e) { e.printStackTrace(); }
+		} catch (SQLException e) { log.error( e, e ); }
 		finally { closeStatements( ps ); }
 		return al.toArray(new String[0]);
 	}
@@ -178,7 +176,7 @@ public class Query {
 			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
 			psInsert = connection.prepareStatement( SQL_ADD_FILE, Statement.RETURN_GENERATED_KEYS );
 			for( String path : paths ) added += addFiles( psSelect, psInsert, new File( path ), incSubDir );
-		} catch (SQLException e) { e.printStackTrace(); return added; }
+		} catch (SQLException e) { log.error( e, e ); return added; }
 		closeStatements( psSelect, psInsert );
 		return added;
 	}
@@ -213,8 +211,7 @@ public class Query {
 	 * @see update
 	 */
 	public int addFilesRegex( String regex, String... paths) {
-		/*DEBUG*/ for( String path : paths ) log.info( "Adding files from "+ path );
-		/*DEBUG*/ for( String path : paths ) System.out.println( "Adding files from "+ path );
+		for( String path : paths ) log.info( "Adding files from "+ path );
 		int added = 0;
 		Pattern pattern = Pattern.compile( regex );
 		PreparedStatement psSelect = null;
@@ -223,7 +220,7 @@ public class Query {
 			psSelect = connection.prepareStatement( SQL_SELECT_PATH );
 			psInsert = connection.prepareStatement( SQL_ADD_FILE, Statement.RETURN_GENERATED_KEYS );
 		}
-		catch (SQLException e) { e.printStackTrace(); return added; }
+		catch (SQLException e) { log.error( e, e ); return added; }
 		for( String path : paths ) added += addFilesRegex( psSelect, psInsert, pattern, new File( path ), true );
 		closeStatements( psSelect, psInsert );
 		return added;
@@ -235,8 +232,10 @@ public class Query {
 			for( File each : file.listFiles() ) added += addFilesRegex( psSelect, psInsert, regex, each, subdir );
 		} else if( file.isFile() ) {
 			String path = file.getPath();
-			if ( regex.matcher( path ).find() ) return addFile( psSelect, psInsert, file, path );
-			else log.warn( "path did not satisfy regex: "+ path );
+			if ( regex.matcher( path ).find() ) {
+				return addFile( psSelect, psInsert, file, path );
+			}
+			else log.info( "path did not satisfy regex: "+ path );
 		}
 		return added;
 	}
@@ -252,19 +251,18 @@ public class Query {
 		int updated = 0;
 		BufferedImage bi;
 		try {
-			//*DEBUG*/ System.out.println( "addFile BufferedImage: "+ path );
 			bi = ImageIO.read( file );
 			psInsert.setShort( 2, (short) bi.getWidth() );
 			psInsert.setShort( 3, (short) bi.getHeight() );
-			//*DEBUG*/ System.out.println( "Dimensions: "+ bi.getWidth() +" x "+ bi.getHeight() );
 		}
-		catch (IOException | SQLException e) {
-			e.printStackTrace();
+		catch (IOException e) {
+			log.warn( "could not read image dimensions from: " + path );
+			log.error( e, e );
 			try {
 				psInsert.setNull( 2, Types.SMALLINT );
 				psInsert.setNull( 3, Types.SMALLINT );
-			} catch (SQLException e1) { e1.printStackTrace(); return 0; }
-		}
+			} catch (SQLException e1) { log.error( e1 ); return 0; }
+		} catch ( SQLException e ) { log.error( e, e ); return 0; }
 		try {
 			psSelect.setString( 1, path );
 			psInsert.setString( 1, path );
@@ -273,9 +271,7 @@ public class Query {
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
 					"\n\tTags: "+ join( "; ", keywords )) : "" ));
-			//*DEBUG*/ System.out.println( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
-			//		"\n\tTags: "+ join( "; ", keywords )) : "" ));
-		} catch( SQLException e ) { e.printStackTrace(System.out); return updated; }
+		} catch( SQLException e ) { log.error( e, e ); return updated; }
 		return updated; // updated rows in db
 	}
 
@@ -315,7 +311,7 @@ public class Query {
 				removed += ps.executeUpdate();
 			}
 			return removed;
-		} catch ( SQLException e ) { e.printStackTrace(); return removed; }
+		} catch ( SQLException e ) { log.error( e, e ); return removed; }
 		finally { closeStatements( ps ); }
 	}
 
@@ -335,7 +331,7 @@ public class Query {
 			ps.setString( 1, path );
 			ps.setInt( 2, fileId );
 			ps.executeUpdate();
-		} catch ( SQLException e ) { e.printStackTrace(); }
+		} catch ( SQLException e ) { log.error( e, e ); }
 		finally { closeStatements( ps ); }
 	}
 
@@ -352,7 +348,7 @@ public class Query {
 			while( rs.next() ) al.add( rs.getInt( 1 ));
 			return al.toArray( new Integer[0] );
 		} catch ( SQLException e ) {
-			e.printStackTrace(); 
+			log.error( e, e ); 
 			return new Integer[0];
 		} finally { closeStatements( statement ); }
 	}
@@ -371,7 +367,7 @@ public class Query {
 			return selectStrings( ps, fileId );
 		}
 		catch( SQLException e ) {
-			e.printStackTrace();
+			log.error( e, e );
 			return null;
 		} finally { closeStatements( ps ); }
 	}
@@ -413,7 +409,7 @@ public class Query {
 			}//end for
 		}//end try
 		catch ( SQLException e ) {
-			e.printStackTrace();
+			log.error( e, e );
 		} finally { closeStatements( psGetKeyword, psAddRelation ); }
 		return updated;
 	}
@@ -436,7 +432,7 @@ public class Query {
 				removed += ps.executeUpdate();
 			}
 			return removed;
-		} catch ( SQLException e ) { e.printStackTrace(); return removed; }
+		} catch ( SQLException e ) { log.error( e, e ); return removed; }
 		finally { closeStatements( ps ); }
 	}
 
@@ -457,7 +453,7 @@ public class Query {
 			return dim;
 		}
 		catch( SQLException e ) {
-			e.printStackTrace();
+			log.error( e, e );
 			return new short[2];
 		} finally { closeStatements( ps ); }
 	}
@@ -474,19 +470,19 @@ public class Query {
 	ResultSet result = null;
 	try {
 		result = stmt.executeQuery( "SELECT * FROM files WHERE "+ conditions +";" );
-	} catch( SQLException e ) { e.printStackTrace(System.out); }
+	} catch( SQLException e ) { log.error( e, e ); }
 	return result;
 }*/
 
 	/*
 	public void setAscii( String kwold, String kwnew ) {
 		try { formatUpdate( SQL_SET_XP_TAG, kwnew, kwold ); }
-		catch( SQLException e ) { e.printStackTrace(System.out); }
+		catch( SQLException e ) { log.error( e, e ); }
 	}
 
 	public void delAscii( String str ) {
 		try { formatUpdate( SQL_DELETE_XP_TAG, str ); }
-		catch( SQLException e ) { e.printStackTrace(System.out); }
+		catch( SQLException e ) { log.error( e, e ); }
 	}
 	 */
 	/*@SuppressWarnings("unused")
@@ -578,7 +574,7 @@ public class Query {
 		for ( Statement s : statements ) {
 			if( s != null )
 				try { s.close(); }
-				catch( SQLException e ) { e.printStackTrace(); }
+				catch( SQLException e ) { log.error( e, e ); }
 		}
 	}
 }

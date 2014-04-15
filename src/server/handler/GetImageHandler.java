@@ -12,8 +12,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.ContextHandler;
 
 import database.Query;
 
@@ -21,72 +24,65 @@ import database.Query;
  * @author andreas
  *
  */
-public class GetImageHandler extends AbstractHandler {
+public class GetImageHandler extends ContextHandler {
 
+	private static Logger log = LogManager.getLogger( GetImageHandler.class.getName() );
+	
 	//constructor
-	public GetImageHandler() {
+	public GetImageHandler( String context ) {
 		super();
+		this.setContextPath( context );
+		this.setHandler( new innerHandler() );
 	}
 
-	@Override
-	public void handle(String target, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response)
-					throws IOException, ServletException {
-		int id = Thread.currentThread().hashCode();;
-		// Hvis ikke foerste request, send til neste handler.
-		if ( !baseRequest.getRequestURI().startsWith("/img/")) {
-			System.out.println(id +" en fil med feil path " +baseRequest.getRequestURI());return; 
+	private class innerHandler extends AbstractHandler {
+		
+		@Override
+		public void handle(String target, Request baseRequest,
+				HttpServletRequest request, HttpServletResponse response)
+				throws IOException, ServletException {
+
+			log.debug( baseRequest.getUri() );
+
+			String imageExtension = null;
+			int fileId = 0;
+			byte[] b = null;
+
+			//hente fil id fra requesten mottat
+			String img_id = request.getParameter( "img_id" );
+			try {
+				fileId = Integer.parseInt( img_id );
+				log.debug( "parse fileId success! result: " + fileId );
+			} catch (NumberFormatException e) {
+				log.warn( "{\"error\":\"image id "+ img_id +" is not an integer.\"}" );
+				return;
 			}
-		
-		
-		System.out.println(id + " Entrer " + this.getClass() + " :" + baseRequest.getRequestURI());
-		
-		
-		
-		//mappe funnet
-		System.out.println(id +" img dir found");
-		
-		
-		String imageExtension = null;
-		int fileId = 0;
-		byte[] b = null;
 
-		//hente fil id fra requesten mottat
-		try {
-			fileId = Integer.parseInt(request.getParameter("img_id"));
-			System.out.println(id +" parse filid success! result: " + fileId);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace(); System.out.println(id +" id er ikke int!?" + " file id:" + fileId + request.getRequestURL());
-			return;
-		} 
-		
-		//henter filen ved hjelp av databasen
-		File image = new Query().getFile( fileId );
-		System.out.println(id +" database lookup done");
-		
-		//bytearray for å holde bildet
-		b = new byte[(int)image.length()];
-		
-		//henter imagepath og filextension
-		String imagePath = image.getPath();
-		imageExtension = imagePath.substring(imagePath.lastIndexOf(".") + 1);
-		
-		
-		FileInputStream input = new FileInputStream(image);
-		int antallSkrevet = input.read(b);
-		System.out.println(id +" skrev " + antallSkrevet + " bytes av: "+ imagePath);
+			//henter filen ved hjelp av databasen
+			File image = new Query().getFile( fileId );
 
-		//lager header
-		response.setContentType("image/"+ imageExtension);
-		response.setStatus(HttpServletResponse.SC_OK);
-		baseRequest.setHandled(true);
-		
-		//henter og skriver til responsen(tømmer buffer) og lukker streams
-		ServletOutputStream os = response.getOutputStream();
-		os.write(b);
-		os.flush();
-		input.close();
-		System.out.println(id +" forlater " + this.getClass() + " :" + baseRequest.getRequestURI());
+			//bytearray for å holde bildet
+			b = new byte[(int)image.length()];
+
+			//henter imagepath og filextension
+			String imagePath = image.getPath();
+			imageExtension = imagePath.substring( imagePath.lastIndexOf( '.' ) + 1 );
+
+
+			FileInputStream input = new FileInputStream(image);
+			int antallSkrevet = input.read(b);
+
+			//lager header
+			response.setContentType("image/"+ imageExtension);
+			response.setStatus(HttpServletResponse.SC_OK);
+			baseRequest.setHandled(true);
+
+			//henter og skriver til responsen(tømmer buffer) og lukker streams
+			ServletOutputStream os = response.getOutputStream();
+			os.write(b);
+			os.flush();
+			input.close();
+			log.debug( "skrev " + antallSkrevet + " bytes av: "+ imagePath );
+		}
 	}
 }
