@@ -12,11 +12,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+/**
+ * @author Asbjorn
+ */
 public class FileUploadHandler extends AbstractHandler {
 
+	private static Logger log = LogManager.getLogger( FileUploadHandler.class.getName() );
 	private String savePath = "C:/Users/Public/Pictures/";
 	private String tempFolder = "C:/Users/Public/Pictures/";
 	private File file ;
@@ -24,19 +30,17 @@ public class FileUploadHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request,HttpServletResponse response) 
 			throws IOException, ServletException {
-		int id = Thread.currentThread().hashCode();
 
-		if(!request.getMethod().equals("POST")) return;
+		if( !request.getMethod().equals( "POST" )) return;
 
-		System.out.println(id +" Entrer " + this.getClass() + " :" + baseRequest.getRequestURI());
-		System.out.println(id +" Request is a POST request");
+		log.debug( request.toString() );
 
 		if (request.getContentType() != null && request.getContentType().startsWith("multipart/form-data")) {
-			System.out.println(id +" ContentType is MultiPart");
+			log.debug( "ContentType is MultiPart" );
 
 			// Check that we have a file upload request
 			boolean isMultipart = ServletFileUpload.isMultipartContent(request);
-			if( isMultipart) System.out.println(id +" File is multipart");
+			if( isMultipart) log.debug( "File is multipart" );
 
 			// Create a factory for disk-based file items
 			DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -81,6 +85,7 @@ public class FileUploadHandler extends AbstractHandler {
 						}
 						fi.write( file ) ;
 						out.println("Uploaded Filename: " + fileName + "<br>");
+						log.debug( "Received a "+ fi.getSize() +" bytes file: "+ fileName );
 					}
 				}
 				out.println("</body>");
@@ -89,12 +94,8 @@ public class FileUploadHandler extends AbstractHandler {
 				System.out.println(ex);
 			}
 		}
-
-		System.out.println(request.toString());
 		response.setContentType("text/html");
 		response.setStatus(HttpServletResponse.SC_OK);
 		baseRequest.setHandled(true);
-		System.out.println(id +" forlater " + this.getClass() + " :" + baseRequest.getRequestURI());
-
 	}
 }
