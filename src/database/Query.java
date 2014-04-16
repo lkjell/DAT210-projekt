@@ -270,7 +270,7 @@ public class Query {
 			String[] keywords = FileMetadataUtil.getXPKeywords( path );
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
-					"\n\tTags: "+ join( "; ", keywords )) : "" ));
+					"\n\tTags: "+ join( "; ", (Object[]) keywords )) : "" ));
 		} catch( SQLException e ) { log.error( e, e ); return updated; }
 		return updated; // updated rows in db
 	}
@@ -279,16 +279,16 @@ public class Query {
 	 * Joins one or more strings into one string with a delimiter.
 	 * 
 	 * @param delimiter The char that delimits the Strings.
-	 * @param strings The strings to join.
+	 * @param objects The strings to join.
 	 * @return A string with all the strings delimited by the delimiter.
 	 */
-	private String join( String delimiter, String...strings ) {
+	private String join( String delimiter, Object...objects ) {
 		StringBuilder joined = new StringBuilder();
 		boolean first = true;
-		for( String str : strings ) {
+		for( Object obj : objects ) {
 			if( first ) { first = false; }
 			else { joined.append( delimiter ); }
-			joined.append( str );
+			joined.append( obj.toString() );
 		}
 		return joined.toString();
 	}
@@ -458,33 +458,34 @@ public class Query {
 		} finally { closeStatements( ps ); }
 	}
 
-	/*public ResultSet search( String conditions ) {
-
-	StringBuilder sb = new StringBuilder();
-	String[] s = conditions.replace( "\"", "\\\"" ).split( " " ); // BUG PRONE !!!
-	for( int i=0; i<s.length; i++ ) {
-		sb.append(( i>0?" AND ":"" ) +"path LIKE \"%"+ s[i] +"%\"" );
-	}
-	conditions = sb.toString();
-
-	ResultSet result = null;
-	try {
-		result = stmt.executeQuery( "SELECT * FROM files WHERE "+ conditions +";" );
-	} catch( SQLException e ) { log.error( e, e ); }
-	return result;
-}*/
-
-	/*
-	public void setAscii( String kwold, String kwnew ) {
-		try { formatUpdate( SQL_SET_XP_TAG, kwnew, kwold ); }
-		catch( SQLException e ) { log.error( e, e ); }
-	}
-
-	public void delAscii( String str ) {
-		try { formatUpdate( SQL_DELETE_XP_TAG, str ); }
-		catch( SQLException e ) { log.error( e, e ); }
-	}
+	/**
+	 * Searches files by comparing filepath and keywords to given words in string
+	 * 
+	 * @param searchstring words separated by space
+	 * @return Integer array of file IDs that matched all words in searchstring
 	 */
+	public Integer[] search( String searchstring ) {
+		
+		log.info( "searching for: \"" + searchstring + "\"" );
+		StringBuilder sb = new StringBuilder();
+		String[] words = searchstring.replace( "\"", "\\\"" ).split( " " ); // don't write \\" in searchstring 
+		for( int i=0; i<words.length; i++ ) // searches path and keywords for string
+				sb.append(( i>0?" AND ":"" ) +"(files.path LIKE '%"+ words[i]
+				+ "%' OR (files.file_id = relation.file_id AND relation.xp_tag_id = xp_tag.xp_tag_id "
+				+ "AND xp_tag.tag LIKE '%"+ words[i] +"%'))" );
+		searchstring = sb.toString();
+		PreparedStatement ps;
+		ArrayList<Integer> al = new ArrayList<>();
+		try {
+			ps = connection.prepareStatement(
+					"SELECT files.file_id FROM files, relation, xp_tag WHERE "+ searchstring );
+			ResultSet rs = ps.executeQuery();
+			while( rs.next() ) al.add( rs.getInt( 1 ));
+			log.info( "found images: "+ al );
+		} catch ( SQLException e ) { log.error( e, e ); }
+		return (Integer[]) al.toArray(new Integer[al.size()]);
+	}
+
 	/*@SuppressWarnings("unused")
 	private int sqlInsert( String table, Object...objs ) throws SQLException {
 		String str = "INSERT " + table + " VALUES(";
