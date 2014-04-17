@@ -464,26 +464,34 @@ public class Query {
 	 * @param searchstring words separated by space
 	 * @return Integer array of file IDs that matched all words in searchstring
 	 */
-	public Integer[] search( String searchstring ) {
+	public ArrayList<Integer> search( String searchstring ) {
 		
 		log.info( "searching for: \"" + searchstring + "\"" );
 		StringBuilder sb = new StringBuilder();
-		String[] words = searchstring.replace( "\"", "\\\"" ).split( " " ); // don't write \\" in searchstring 
+		if( searchstring == null ) {
+			log.debug( "empty search string" );
+			Integer[] ints = getAllFileIds();
+			ArrayList<Integer> al = new ArrayList<Integer>( ints.length );
+			for( Integer i : ints ) al.add( i );
+			return al;
+		}
+		String[] words = searchstring.replace( "\"", "\\\"" ).split( " " ); // don't write \\" in searchstring
 		for( int i=0; i<words.length; i++ ) // searches path and keywords for string
 				sb.append(( i>0?" AND ":"" ) +"(files.path LIKE '%"+ words[i]
 				+ "%' OR (files.file_id = relation.file_id AND relation.xp_tag_id = xp_tag.xp_tag_id "
 				+ "AND xp_tag.tag LIKE '%"+ words[i] +"%'))" );
 		searchstring = sb.toString();
-		PreparedStatement ps;
+		PreparedStatement ps = null;
 		ArrayList<Integer> al = new ArrayList<>();
 		try {
 			ps = connection.prepareStatement(
-					"SELECT files.file_id FROM files, relation, xp_tag WHERE "+ searchstring );
+					"SELECT DISTINCT files.file_id FROM files, relation, xp_tag WHERE "+ searchstring );
 			ResultSet rs = ps.executeQuery();
 			while( rs.next() ) al.add( rs.getInt( 1 ));
 			log.info( "found images: "+ al );
-		} catch ( SQLException e ) { log.error( e, e ); }
-		return (Integer[]) al.toArray(new Integer[al.size()]);
+		} catch ( SQLException e ) { log.error( e, e );
+		} finally { closeStatements( ps ); }
+		return al;
 	}
 
 	/*@SuppressWarnings("unused")

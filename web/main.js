@@ -1,6 +1,6 @@
 
 // Global variables
-imageById = new Array();
+var imageById = new Array();
 
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
@@ -9,23 +9,53 @@ Array.prototype.remove = function(from, to) {
 	return this.push.apply(this, rest);
 }
 
+// Quentin http://stackoverflow.com/questions/979975
+var QueryString = function () {
+	// This function is anonymous, is executed immediately and 
+	// the return value is assigned to QueryString!
+	var query_string = {};
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i=0;i<vars.length;i++) {
+		var pair = vars[i].split("=");
+			// If first entry with this name
+		if (typeof query_string[pair[0]] === "undefined") {
+			query_string[pair[0]] = pair[1];
+			// If second entry with this name
+		} else if (typeof query_string[pair[0]] === "string") {
+			var arr = [ query_string[pair[0]], pair[1] ];
+			query_string[pair[0]] = arr;
+			// If third or later entry with this name
+		} else {
+			query_string[pair[0]].push(pair[1]);
+		}
+	} 
+	return query_string;
+} ();
+
 $( function() { // When document is ready
+
+	console.log( "starting" );
+
+	$( '#searchtext' ).change( function( event ) {
+		var txt = $( this ).val();
+		console.log( txt );
+		search( txt, function( data, status, xhr ) { //success
+			buildGrid( data );
+		}, function( xhr, status, error ) { // error
+			console.log( "id-list fetch at textbox update failed" );
+		});
+	});
 
 	$( '.images' ).sortable().disableSelection();
 
-	$( '.image' ).each( function( index, element ) {
-		new Image( $( element ).attr( 'id' ) );
-	});
-
-	$( '.image' ).hover(
-		function() { this.style.zIndex = '2'; }, // mouse enter
-		function() { this.style.zIndex = '1'; }  // mouse leave
-	).click( function() {
-		updateSidebar( $( this ).attr( 'id' ));
-	}).dblclick( showLargeImagePanel );
-
 	$( '.largeImgPanel' ).dblclick( function() {
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
+	});
+
+	search( QueryString.filter, function( data, status, xhr ) { //success
+		$( '#searchtext' ).val( QueryString.filter );
+		buildGrid( data );
 	});
 });
 
@@ -50,11 +80,11 @@ function Image( id, metadata ) {
 	this.hasdata = false;
 	if( metadata != undefined ) setMetadata( metadata );
 
-	this.fetchMetadata = function( then ) {
+	this.fetchMetadata = function( after ) {
 		console.log( "fetching metadata for img "+ this.id );
 		get( "meta?img_id="+ this.id, function( data, status, xhr ) {
 			setMetadata( data );
-			if ( typeof then == 'function' ) then( data, status, xhr );
+			if ( typeof after == 'function' ) after( data, status, xhr );
 		});
 	}
 
@@ -102,15 +132,45 @@ function post( url, plainObject, success, error ) {
 	});
 }
 
-function search() {}
+function search( string, success, error ) {
+	string = ( string == undefined ) ? "search" : "search?string="+ string;
+	$.ajax({
+		url: string,
+		type: 'GET',
+		dataType: 'json',
+		success: success,
+		error: error
+	});
+}
 
 function sortBy() {}
 
+function buildGrid( ids ) {
+	console.log( ids.toString() );
+	var images = $( '.images' ).empty();
+	for( var i=0; i<ids.length; i++ ) {
+		if( imageById[ids[i]] == undefined ) new Image( ids[i] );
+		images.append(
+			$( '<li>' ).attr( 'class', "image" ).attr( 'id', ids[i] ).append(
+			$( '<img>' ).attr( 'src', "img/?img_id="+ ids[i] ))
+		);
+	}
+	$( '.image' ).hover(
+		function() { this.style.zIndex = '2'; }, // mouse enter
+		function() { this.style.zIndex = '1'; }  // mouse leave
+	).click( function() {
+		console.log( "clicked once!" );
+		updateSidebar( $( this ).attr( 'id' ));
+	}).dblclick( showLargeImagePanel );
+}
+
 function updateSidebar( img_id ) {
+	console.log( "ran updateSidebar()" );
 	var image = imageById[img_id];
 	if ( !image.hasdata ) image.fetchMetadata( writeIt );
 	else writeIt();
 	function writeIt() {
+		console.log( "ran writeIt()" );
 		var container = $( '<div>' );
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),

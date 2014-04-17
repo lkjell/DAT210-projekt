@@ -23,7 +23,7 @@ public class HtmlHandler extends AbstractHandler {
 	private static Logger log = LogManager.getLogger( HtmlHandler.class.getName() );
 	
 	String htmlPath;
-	static int antallAccepterteHTMLCall = 0;
+	static int antallAksepterteHTMLKall = 0;
 	
 	public HtmlHandler( String path ) { this.htmlPath = path; }
 	
@@ -71,20 +71,18 @@ public class HtmlHandler extends AbstractHandler {
 	public void handle(String target,Request baseRequest,HttpServletRequest request,HttpServletResponse response) 
 	        throws IOException, ServletException {
 
-		String uri = baseRequest.getRequestURI();
+		String uri = baseRequest.getUri().toString();
 		
 		// Hvis ikke foerste request, send til neste handler.
 		String contentType = request.getContentType();
 		if ( !uri.equals( "/" ) || contentType != null && !contentType.contains( "text/html" )) { 
 			log.debug( "Uri ikke acceptert: " + uri );
 			return; }
-		log.debug("Entrer " + this.getClass() + " :" + baseRequest.getRequestURI());
+		log.debug( baseRequest.getUri() );
 		
-		antallAccepterteHTMLCall++;
-
-		log.debug("Uri akseptert: " + uri);
+		antallAksepterteHTMLKall++;
 		
-		log.debug("antallAccepterteHTMLCall: " + antallAccepterteHTMLCall);
+		log.debug("antallAksepterteHTMLKall: " + antallAksepterteHTMLKall);
 	    response.setContentType("text/html;charset=utf-8");
 	    response.setStatus(HttpServletResponse.SC_OK);
 	    baseRequest.setHandled(true);

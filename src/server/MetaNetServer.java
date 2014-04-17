@@ -51,7 +51,7 @@ public class MetaNetServer extends Server {
 	    		
 	    		
 	    		//leverer html
-	    		new HtmlHandler( "web/index.html" ),
+	    		//new HtmlHandler( "web/index.html" ),
 
 	    		//takler upload
 	    		new FileUploadHandler(),
@@ -69,7 +69,8 @@ public class MetaNetServer extends Server {
 	    contexts.setHandlers( new Handler[]{
 	    		omnipotentHandler,
 	    		new MetaDataHandler( "/meta" ),	// Metadata Requests and Updates
-	    		new GetImageHandler( "/img" )	// File Download
+	    		new GetImageHandler( "/img" ),	// File Download
+	    		new SearchHandler( "/search" )	// Search results
 	    });
 	    this.setHandler( contexts );
 	    

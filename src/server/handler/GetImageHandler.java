@@ -43,7 +43,7 @@ public class GetImageHandler extends ContextHandler {
 				throws IOException, ServletException {
 
 			log.debug( baseRequest.getUri() );
-
+			
 			String imageExtension = null;
 			int fileId = 0;
 			byte[] b = null;
@@ -59,7 +59,12 @@ public class GetImageHandler extends ContextHandler {
 			}
 
 			//henter filen ved hjelp av databasen
-			File image = new Query().getFile( fileId );
+			Query q = new Query();
+			File image = q.getFile( fileId );
+			if( image == null ) {
+				log.warn( "Can't get file from database!" );
+				return;
+			}
 
 			//bytearray for å holde bildet
 			b = new byte[(int)image.length()];
