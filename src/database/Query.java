@@ -55,7 +55,7 @@ public class Query {
 
 	public static final String JDBC_URL = "jdbc:derby:MetaDB;create=true";
 	private static Logger log = LogManager.getLogger( "Query" );
-	private static Connection connection;
+	private Connection connection;
 
 	//constructor
 	public Query() {

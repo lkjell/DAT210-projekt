@@ -102,6 +102,7 @@ public class MetaDataHandler extends ContextHandler {
 			String path = q.getPath( id ).replace( '\\', '/' );
 			String[] kw = q.getKeywords( id );
 			short[] dim = q.getDimensions( id );
+			q = null;
 			StringBuilder kwlist = new StringBuilder();
 			for ( int i=0; i<kw.length; i++ )
 				kwlist.append(( i==0 ? "" : "," ) +"\""+ kw[i] +"\"" );

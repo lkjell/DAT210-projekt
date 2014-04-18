@@ -17,6 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+import database.Query;
+
 /**
  * @author Asbjorn
  */
@@ -66,6 +68,7 @@ public class FileUploadHandler extends AbstractHandler {
 				out.println("</head>");
 				out.println("<body>");
 
+				Query q = new Query();
 				while ( i.hasNext () ){
 					FileItem fi = (FileItem)i.next();
 					if ( !fi.isFormField () ){
@@ -86,8 +89,10 @@ public class FileUploadHandler extends AbstractHandler {
 						fi.write( file ) ;
 						out.println("Uploaded Filename: " + fileName + "<br>");
 						log.debug( "Received a "+ fi.getSize() +" bytes file: "+ fileName );
+						q.addFiles( savePath + fileName );
 					}
 				}
+				q = null;
 				out.println("</body>");
 				out.println("</html>");
 			}catch(Exception ex) {

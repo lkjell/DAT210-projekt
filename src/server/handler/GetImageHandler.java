@@ -61,6 +61,7 @@ public class GetImageHandler extends ContextHandler {
 			//henter filen ved hjelp av databasen
 			Query q = new Query();
 			File image = q.getFile( fileId );
+			q = null;
 			if( image == null ) {
 				log.warn( "Can't get file from database!" );
 				return;

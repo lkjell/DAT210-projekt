@@ -29,7 +29,7 @@ var QueryString = function () {
 		} else {
 			query_string[pair[0]].push(pair[1]);
 		}
-	} 
+	}
 	return query_string;
 } ();
 
@@ -159,18 +159,15 @@ function buildGrid( ids ) {
 		function() { this.style.zIndex = '2'; }, // mouse enter
 		function() { this.style.zIndex = '1'; }  // mouse leave
 	).click( function() {
-		console.log( "clicked once!" );
 		updateSidebar( $( this ).attr( 'id' ));
 	}).dblclick( showLargeImagePanel );
 }
 
 function updateSidebar( img_id ) {
-	console.log( "ran updateSidebar()" );
 	var image = imageById[img_id];
 	if ( !image.hasdata ) image.fetchMetadata( writeIt );
 	else writeIt();
 	function writeIt() {
-		console.log( "ran writeIt()" );
 		var container = $( '<div>' );
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),
@@ -182,7 +179,6 @@ function updateSidebar( img_id ) {
 }
 
 function requestMetadata( file_id ) {
-
 	console.log("ajax request "+ file_id);
 	$.ajax({
 		url: "getTags?img_id="+ file_id,
