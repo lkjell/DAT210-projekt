@@ -12,10 +12,8 @@ $( function() {
 	});
 
 	$( ".image" ).dblclick( showLargeImagePanel );
+	$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
 	
-	$( ".largeImgPanel" ).dblclick( function() {
-		$('.largeImgPanel').css( 'visibility', 'hidden' );
-	});
 });
 
 function requestMetadata( file_id ) {
