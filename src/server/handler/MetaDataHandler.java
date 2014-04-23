@@ -21,10 +21,10 @@ import database.Query;
 public class MetaDataHandler extends ContextHandler {
 
 	private static Logger log = LogManager.getLogger( MetaDataHandler.class.getName() );
-	
+
 	public MetaDataHandler( String context ) {
 		super();
-		this.setContextPath( context );
+		this.setContextPath(context);
 		this.setHandler( new innerHandler() );
 	}
 	
@@ -44,26 +44,64 @@ public class MetaDataHandler extends ContextHandler {
 		@Override
 		public void handle(String target, Request baseRequest, HttpServletRequest request,
 				HttpServletResponse response ) throws IOException, ServletException {
+			//log.debug( baseRequest );
+			//if( !checkContext( baseRequest )) return;
 			
 			String method = request.getMethod();
+			log.debug( baseRequest );
 			
 			if( method.equals( "GET" )) {
 				
-				log.debug( baseRequest.getUri() );
 				String accept = request.getHeader( "Accept" );
 				if( accept.contains( "application/x-resource+json" )
 						|| accept.contains( "application/x-collection+json" )
 						|| accept.contains( "application/json" )) {
 					log.debug( "Accept header: \""+ accept +"\"" );
-					
 					sendMetadata( request, response );
 					baseRequest.setHandled( true );
 					
 				} else log.warn( "Unknown Accept header in GET request: \""+ accept +"\"" );
 				
-			}else if( method.equals( "POST" ))
+			} else if( method.equals( "POST" )) {
 				
-				log.warn( "POST handler is not implemented "+ baseRequest.getRequestURI() );
+				String uri = baseRequest.getRequestURI();
+				String[] uriParts = uri.split( "/:" );
+				
+				if( uriParts.length > 1 ) {
+					int id = 0;
+					try {
+						id = Integer.parseInt( uriParts[1].substring( 0, uriParts[1].length() - 1 ));
+					} catch ( NumberFormatException e ) { log.error( e, e ); return; }
+					String addkw = request.getParameter( "add" );
+					String remkw = request.getParameter( "remove" );
+					Query q = null;
+					if( addkw != null ) {
+						log.debug( "adding keywords" );
+						q = new Query();
+						q.addKeywords( id, addkw );
+					}
+					if( remkw != null ) {
+						log.debug( "removing keywords" );
+						if( q == null ) q = new Query();
+						q.removeKeywords( id, remkw );
+					}
+					q = null;
+					response.setStatus( HttpServletResponse.SC_OK );
+					baseRequest.setHandled( true );
+					return;
+				}
+				
+				String oldkw = request.getParameter( "old" );
+				String newkw = request.getParameter( "new" );
+				if( oldkw == null || newkw == null ) return;
+				Query q = new Query();
+				int success = q.setKeyword( oldkw, newkw );
+				q = null;
+				if( success != 0 ) response.setStatus( HttpServletResponse.SC_OK );
+				else response.setStatus( HttpServletResponse.SC_NOT_FOUND );
+				baseRequest.setHandled( true );
+				//log.warn( "POST handler is not implemented "+ baseRequest.getRequestURI() );
+			}
 		}
 		
 		/**
