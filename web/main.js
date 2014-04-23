@@ -1,6 +1,7 @@
 
 // Global variables
 var imageById = new Array();
+var imgFiltered = new Array(); //bruke til å finne id
 
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
@@ -55,7 +56,8 @@ $( function() { // When document is ready
 
 	search( QueryString.filter, function( data, status, xhr ) { //success
 		$( '#searchtext' ).val( QueryString.filter );
-		buildGrid( data );
+		buildGrid( data ); //data er liste med tall, brukes til filtrering
+		imgFiltered = data;
 	});
 });
 
@@ -242,6 +244,13 @@ function requestMetadata( file_id ) {
 
 function showLargeImagePanel() {
 	var imgSource = $( this ).find('img').attr('src');
+	var bildeId = $( this ).attr('id'); //gir ut id'en til bildet som ble klikket på
+	//find funksjon på imgFiltered for å finne neste bilde eller forrige bilde
+	var index = imgFiltered.indexOf(bildeId); //finner ut hvor i lista bildet er, altså hvilket bildet man er på nå
+	// index +1 er det neste bilde
+	
+	var idNeste = imgFiltered[index+1];
+	var idForrige = imgFiltered[index+1]
 	console.log(imgSource);
 	$('#largeImg').attr( 'src', imgSource );
 	$('.largeImgPanel').css( 'visibility', 'visible');
