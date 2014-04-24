@@ -53,10 +53,16 @@ $( function() { // When document is ready
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
 	});
 
+
 	search( QueryString.filter, function( data, status, xhr ) { //success
 		$( '#searchtext' ).val( QueryString.filter );
 		buildGrid( data );
 	});
+
+	$( ".image" ).dblclick( showLargeImagePanel );
+	$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
+	
+
 });
 
 // Constructor for Image objects
