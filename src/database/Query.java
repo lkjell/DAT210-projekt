@@ -481,7 +481,7 @@ public class Query {
 	}
 
  	public boolean isSynched( int fileId ) {
- 		return true;
+ 		return false;
  	}
  	
 	/**

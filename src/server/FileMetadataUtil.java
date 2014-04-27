@@ -30,7 +30,7 @@ public class FileMetadataUtil {
 
 	public static String[] getXPKeywords( InputStream is, String path ) {
 		try {
-			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( is, path );
+			final JpegImageMetadata jpeg = (JpegImageMetadata) Imaging.getMetadata( new File(path) );
 			if (jpeg == null) return new String[0];
 			final TiffField field = jpeg.findEXIFValueWithExactMatch(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
 			if (field == null) return new String[0];
