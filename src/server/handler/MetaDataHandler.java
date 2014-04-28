@@ -64,6 +64,11 @@ public class MetaDataHandler extends ContextHandler {
 				
 			} else if( method.equals( "POST" )) {
 				
+				// <host>/meta/:<id>/add=<keyword>
+				// <host>/meta/:<id>/remove=<keyword>
+				// <host>/meta/:<id>/old=<keyword>&new=<keyword>
+				// example 127.0.0.1/meta/:4/add=orange
+				
 				String uri = baseRequest.getRequestURI();
 				String[] uriParts = uri.split( "/:" );
 				
