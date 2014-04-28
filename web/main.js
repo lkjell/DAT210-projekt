@@ -70,7 +70,7 @@ $( function() { // When document is ready
 function Image( id, metadata ) {
 
 	// private members
-	var _xpkeywords;
+	var _xpkeywords = new Array();
 	var that = this;
 
 	function setMetadata( metadata ) {
@@ -97,21 +97,29 @@ function Image( id, metadata ) {
 	this.getKeywords = function() { return _xpkeywords;	}
 
 	this.addKeywords = function( keywords ) {
+		if( keywords == undefined ) return;
 		for( var i in arguments ) {
 			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
 				return; // TODO: remove instead
 		}
-		post( "meta{"+ this.id +"}", {XPKeywords: arguments},
-			function( data, status, xhr ) {
-				alert( data );
-			}
-		);
+		var url = "meta/:"+ this.id +"/?add="+ arguments[0];
+		console.log( "POST: "+ url );
+		$.post( url, function( data, status, xhr ) {
+				alert( data +" "+ status );
+		});
+		
 	}
 
 	this.removeKeywords = function( keywords ) {
+		if( keywords == undefined ) return;
 		for( var i in arguments ) {
 			if( !( typeof arguments[i] === 'string' )) return;
 		}
+		var url = "meta/:"+ this.id +"/?remove="+ arguments[0];
+		console.log( "POST: "+ url );
+		$.post( url, function( data, status, xhr ) {
+				alert( data +" "+ status );
+		});
 	}
 
 	imageById[id] = this;
@@ -128,7 +136,7 @@ function get( url, success, error ) {
 }
 
 function post( url, plainObject, success, error ) {
-	$.ajax({
+	$.post({
 		url: url,
 		type: 'POST',
 		dataType: 'json',
@@ -182,6 +190,12 @@ function updateSidebar( img_id ) {
 		);
 		$( ".right" ).html( container );
 	}
+}
+
+function updateKeyword( oldKw, newKw ) {
+	post( "meta/?old="+ oldKw +"&new="+ newKw, function() {
+		alert( oldKw +" changed to "+ newKw );
+	});
 }
 
 function requestMetadata( file_id ) {
