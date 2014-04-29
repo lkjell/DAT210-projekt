@@ -95,11 +95,18 @@ function Image( id, metadata ) {
 			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
 				return; // TODO: remove instead
 		}
+		_xpkeywords.push( arguments[0] );
+		console.log( arguments[0].toString() );
 		post( "meta{"+ this.id +"}", {XPKeywords: arguments},
 			function( data, status, xhr ) {
 				alert( data );
 			}
 		);
+	}
+
+	this.setKeyword = function( id, value ) {
+		_xpkeywords[id] = value;
+		console.log( value );
 	}
 
 	this.removeKeywords = function( keywords ) {
@@ -168,11 +175,30 @@ function updateSidebar( img_id ) {
 	if ( !image.hasdata ) image.fetchMetadata( writeIt );
 	else writeIt();
 	function writeIt() {
+
+
 		var container = $( '<div>' );
+		var kwinput = $('<p>')
+		var kws = image.getKeywords();
+		for( var i = 0; i < kws.length; i++ ){
+			var kw = kws[i]
+			kwinput.append( $('<input>').val( kw ).attr( 'id', i )
+				.change( function() {
+					var id = $( this ).attr('id');
+					var val = $( this ).val();
+					image.setKeyword( id, val );
+				} )
+			);
+		}
+		kwinput.append( $('<input>').change( function() {
+			image.addKeywords( $( this ).val() );
+			
+		} ));
+		console.log(image.getKeywords().toString());
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),
 			$( '<p>' ).text( "dimensions: "+ image.width +" x "+ image.height ),
-			$( '<p>' ).text( "keywords: "+ image.getKeywords() )
+			$( '<p>' ).text( "keywords: "), kwinput
 		);
 		$( ".right" ).html( container );
 	}
