@@ -53,10 +53,16 @@ $( function() { // When document is ready
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
 	});
 
+
 	search( QueryString.filter, function( data, status, xhr ) { //success
 		$( '#searchtext' ).val( QueryString.filter );
 		buildGrid( data );
 	});
+
+	$( ".image" ).dblclick( showLargeImagePanel );
+	$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
+	
+
 });
 
 // Constructor for Image objects
@@ -64,7 +70,7 @@ $( function() { // When document is ready
 function Image( id, metadata ) {
 
 	// private members
-	var _xpkeywords;
+	var _xpkeywords = new Array();
 	var that = this;
 
 	function setMetadata( metadata ) {
@@ -91,10 +97,12 @@ function Image( id, metadata ) {
 	this.getKeywords = function() { return _xpkeywords;	}
 
 	this.addKeywords = function( keywords ) {
+		if( keywords == undefined ) return;
 		for( var i in arguments ) {
 			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
 				return; // TODO: remove instead
 		}
+<<<<<<< HEAD
 		_xpkeywords.push( arguments[0] );
 		console.log( arguments[0].toString() );
 		post( "meta{"+ this.id +"}", {XPKeywords: arguments},
@@ -102,6 +110,14 @@ function Image( id, metadata ) {
 				alert( data );
 			}
 		);
+=======
+		var url = "meta/:"+ this.id +"/?add="+ arguments[0];
+		console.log( "POST: "+ url );
+		$.post( url, function( data, status, xhr ) {
+				alert( data +" "+ status );
+		});
+		
+>>>>>>> 6f9105cd4905bb256d39fc5170fcdf06d19dd41b
 	}
 
 	this.setKeyword = function( id, value ) {
@@ -110,9 +126,15 @@ function Image( id, metadata ) {
 	}
 
 	this.removeKeywords = function( keywords ) {
+		if( keywords == undefined ) return;
 		for( var i in arguments ) {
 			if( !( typeof arguments[i] === 'string' )) return;
 		}
+		var url = "meta/:"+ this.id +"/?remove="+ arguments[0];
+		console.log( "POST: "+ url );
+		$.post( url, function( data, status, xhr ) {
+				alert( data +" "+ status );
+		});
 	}
 
 	imageById[id] = this;
@@ -129,7 +151,7 @@ function get( url, success, error ) {
 }
 
 function post( url, plainObject, success, error ) {
-	$.ajax({
+	$.post({
 		url: url,
 		type: 'POST',
 		dataType: 'json',
@@ -202,6 +224,12 @@ function updateSidebar( img_id ) {
 		);
 		$( ".right" ).html( container );
 	}
+}
+
+function updateKeyword( oldKw, newKw ) {
+	post( "meta/?old="+ oldKw +"&new="+ newKw, function() {
+		alert( oldKw +" changed to "+ newKw );
+	});
 }
 
 function requestMetadata( file_id ) {

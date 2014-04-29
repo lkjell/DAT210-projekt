@@ -32,20 +32,20 @@ public class FileUploadHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request,HttpServletResponse response) 
 			throws IOException, ServletException {
-
-		if( !request.getMethod().equals( "POST" )) return;
+		
+		if( !request.getMethod().equals( "POST" ) || !baseRequest.getUri().toString().equals( "/" ) )
+			return;
 
 		log.debug( request.toString() );
 		
-		if (request.getRemoteAddr() == request.getLocalAddr()){
+//		if (request.getRemoteAddr() == request.getLocalAddr()){
 //			Method for get filepath and move on local machine
 			
 //			response.setContentType("text/html");
 //			response.setStatus(HttpServletResponse.SC_OK);
 //			baseRequest.setHandled(true);
 //			return;
-			
-		}
+//		}
 
 		if (request.getContentType() != null && request.getContentType().startsWith("multipart/form-data")) {
 			log.debug( "ContentType is MultiPart" );
