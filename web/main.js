@@ -102,22 +102,13 @@ function Image( id, metadata ) {
 			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
 				return; // TODO: remove instead
 		}
-<<<<<<< HEAD
 		_xpkeywords.push( arguments[0] );
 		console.log( arguments[0].toString() );
-		post( "meta{"+ this.id +"}", {XPKeywords: arguments},
-			function( data, status, xhr ) {
-				alert( data );
-			}
-		);
-=======
 		var url = "meta/:"+ this.id +"/?add="+ arguments[0];
 		console.log( "POST: "+ url );
 		$.post( url, function( data, status, xhr ) {
 				alert( data +" "+ status );
 		});
-		
->>>>>>> 6f9105cd4905bb256d39fc5170fcdf06d19dd41b
 	}
 
 	this.setKeyword = function( id, value ) {
