@@ -131,6 +131,7 @@
 	height: 680px auto;
 	float:  right;
 	position: relative;
+
 	
 }
 
@@ -209,3 +210,7 @@
 	#sddm div a:hover
 	{	background: #49A3FF;
 		color: #FFF}
+
+.lol89 {
+	float:	left;
+}

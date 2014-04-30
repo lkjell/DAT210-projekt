@@ -107,7 +107,7 @@ function Image( id, metadata ) {
 		var url = "meta/:"+ this.id +"/?add="+ arguments[0];
 		console.log( "POST: "+ url );
 		$.post( url, function( data, status, xhr ) {
-				alert( data +" "+ status );
+				//alert( data +" "+ status );
 		});
 	}
 
@@ -191,11 +191,11 @@ function updateSidebar( img_id ) {
 
 
 		var container = $( '<div>' );
-		var kwinput = $('<p>')
+		var kwsliste = $('<p>');
 		var kws = image.getKeywords();
 		for( var i = 0; i < kws.length; i++ ){
 			var kw = kws[i]
-			kwinput.append( $('<input>').val( kw ).attr( 'id', i )
+			kwsliste.append( $('<input>').val( kw ).attr( 'id', i ).attr('class', 'lol89')
 				.change( function() {
 					var id = $( this ).attr('id');
 					var val = $( this ).val();
@@ -203,7 +203,10 @@ function updateSidebar( img_id ) {
 				} )
 			);
 		}
-		kwinput.append( $('<input>').change( function() {
+		
+		var kwsfelt = $( '<div>' );
+		kwsfelt.append(kwsliste);
+		kwsfelt.append( $('<input>').change( function() {
 			image.addKeywords( $( this ).val() );
 			
 		} ));
@@ -211,7 +214,7 @@ function updateSidebar( img_id ) {
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),
 			$( '<p>' ).text( "dimensions: "+ image.width +" x "+ image.height ),
-			$( '<p>' ).text( "keywords: "), kwinput
+			$( '<p>' ).text( "keywords: "), kwsfelt
 		);
 		$( ".right" ).html( container );
 	}
