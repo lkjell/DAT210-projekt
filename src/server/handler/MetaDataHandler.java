@@ -83,7 +83,7 @@ public class MetaDataHandler extends ContextHandler {
 					if( addkw != null ) {
 						log.debug( "adding keywords" );
 						q = new Query();
-						q.addKeywords( id, addkw );
+						q.addKeywords( id, addkw.split( "," ));
 					}
 					if( remkw != null ) {
 						log.debug( "removing keywords" );
