@@ -429,6 +429,7 @@ public class Query {
 		int updated = 0;
 		try {
 			ps = connection.prepareStatement( "UPDATE xp_tag SET tag = ? WHERE tag = ?" );
+			log.info( "tag '"+ oldkw +"' changing to '"+ newkw +"'" );
 			updated = exeUpdate( ps, newkw, oldkw );
 			if( updated != 0 ) log.info( "tag '"+ oldkw +"' changed to '"+ newkw +"'" );
 		}
@@ -448,9 +449,9 @@ public class Query {
 				removed += ps.executeUpdate();
 				log.debug( "removed tag '"+ kw +"' from file "+ fileId );
 			}
-			String kw = join( ";", getKeywords( fileId ));
-			if( FileMetadataUtil.writeXPKeywords( getFile( fileId ), kw ) )
-				log.debug( "removed tags from file. Remaining: "+ kw );
+//			String kw = join( ";", getKeywords( fileId ));
+//			if( FileMetadataUtil.writeXPKeywords( getFile( fileId ), kw ) )
+//				log.debug( "removed tags from file. Remaining: "+ kw );
 			return removed;
 		} catch ( SQLException e ) { log.error( e, e ); return removed; }
 		finally { closeStatements( ps ); }

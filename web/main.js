@@ -1,6 +1,7 @@
 
 // Global variables
 var imageById = new Array();
+var xpkeywords = new Array();
 
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
@@ -61,9 +62,32 @@ $( function() { // When document is ready
 
 	$( ".image" ).dblclick( showLargeImagePanel );
 	$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
-	
-
 });
+
+/* Constructor for Keyword objects
+ * Keyword is a mutable String object
+ */
+function Keyword( value ) {
+
+	if( value == undefined )
+		console.error( "Keyword instanciated without arguments" );
+	this._val = value;
+	function _set( value ) { this._val = value; console.log( "_set" ); }
+	this.set = function( value ) {
+		var oldvalue = this._val;
+		var url = "meta/?old="+ oldvalue +"&new="+ value;
+		console.log( "POST: "+ url );
+		$.post( url, function() {
+			console.log( "keyword "+ oldvalue +" changed to "+ value );
+			_set( value );
+		});
+	}
+}
+Keyword.prototype.toString = function() { return this._val; }
+Keyword.prototype.valueOf = function() { return this._val; }
+Keyword.prototype.equals = function( arg ) {
+	return this._val == arg.toString();
+}
 
 // Constructor for Image objects
 // all metadata are stored in these objects
@@ -74,17 +98,50 @@ function Image( id, metadata ) {
 	var that = this;
 
 	function setMetadata( metadata ) {
-		_xpkeywords = metadata.keywords;
 		that.path   = metadata.path;
 		that.width  = metadata.width;
 		that.height = metadata.height;
-		that.hasdata = true;
+		_xpkeywords = new Array();
+		setKeywords( metadata.keywords );
+	}
+
+	function setKeywords( kws ) {
+		var newkws = new Array();
+		for( var i in kws ) {
+			var kw = kws[i];
+			// if kw is not a string
+			if( !( typeof kw === 'string' )) continue;
+			kw = kw.trim();
+			// if kw is already in the local list
+			if( that.hasKeyword( kw ) != -1 ) continue;
+			// indexOf does not work comparing Keyword to String
+			var index = -1;
+			for( var j in xpkeywords ) {
+				if( xpkeywords[j] == kw ) index = j;
+			}
+			// if kw is not in the global list
+			if( index === -1 ) {
+				index = xpkeywords.length;
+				xpkeywords.push( new Keyword( kw ));
+			}
+			_xpkeywords.push( xpkeywords[index] );
+			newkws.push( kw );
+			console.log( "image"+ that.id +" added keyword: "+ kw );
+		}
+		return newkws;
 	}
 
 	// public members
 	this.id = id;
 	this.hasdata = false;
 	if( metadata != undefined ) setMetadata( metadata );
+
+	this.hasKeyword = function( keyword ) {
+		for( var i in _xpkeywords ) {
+			if( _xpkeywords[i] == keyword ) return i;
+		}
+		return -1;
+	}
 
 	this.fetchMetadata = function( after ) {
 		console.log( "fetching metadata for img "+ this.id );
@@ -94,18 +151,13 @@ function Image( id, metadata ) {
 		});
 	}
 
-	this.getKeywords = function() { return _xpkeywords;	}
+	this.getKeywords = function() { return _xpkeywords; }
 
 	this.addKeywords = function( keywords ) {
-		if( keywords == undefined ) return;
-		for( var i in arguments ) {
-			if( !( typeof arguments[i] === 'string' ) || arguments[i] in _xpkeywords )
-				return; // TODO: remove instead
-		}
-		_xpkeywords.push( arguments[0] );
-		console.log( arguments[0].toString() );
-		var url = "meta/:"+ this.id +"/?add="+ arguments[0];
+		var newkws = setKeywords( arguments );
+		var url = "meta/:"+ this.id +"/?add="+ newkws.toString();
 		console.log( "POST: "+ url );
+<<<<<<< HEAD
 		$.post( url, function( data, status, xhr ) {
 				//alert( data +" "+ status );
 		});
@@ -114,18 +166,30 @@ function Image( id, metadata ) {
 	this.setKeyword = function( id, value ) {
 		_xpkeywords[id] = value;
 		console.log( value );
+=======
+		$.post( url );
+>>>>>>> 88d502358ab7d3df341c46c57ccb56dceefb7f2f
 	}
 
 	this.removeKeywords = function( keywords ) {
-		if( keywords == undefined ) return;
+		var list = new Array();
 		for( var i in arguments ) {
-			if( !( typeof arguments[i] === 'string' )) return;
+			var kw = arguments[i];
+			// if kw is not a string
+			if( !( typeof kw === 'string' ) ) continue;
+			kw = kw.trim();
+			// if kw is not in the local list
+			if( that.hasKeyword( kw ) == -1 ) continue;
+			list[i] = kw;
+			var kws = this.getKeywords();
+			for( var j in kws ) {
+				if( kws[j] == kw ) kws.splice( j, 1 );
+			}
+			console.log( "image"+ that.id +" removed keyword: "+ kw );
 		}
-		var url = "meta/:"+ this.id +"/?remove="+ arguments[0];
+		var url = "meta/:"+ this.id +"/?remove="+ list.toString();
 		console.log( "POST: "+ url );
-		$.post( url, function( data, status, xhr ) {
-				alert( data +" "+ status );
-		});
+		$.post( url );
 	}
 
 	imageById[id] = this;
@@ -189,12 +253,25 @@ function updateSidebar( img_id ) {
 	else writeIt();
 	function writeIt() {
 
-
 		var container = $( '<div>' );
 		var kwsliste = $('<p>');
 		var kws = image.getKeywords();
+		// returns a function to run once an input is changed
+		function onKeywordChange( keyword ) {
+			return function() {
+				var newkw = $( this ).val();
+				if( newkw == "" ) {
+					image.removeKeywords( keyword.toString() );
+					return;
+				}
+				console.log( "edited input from "
+					+ keyword.toString() +" to "+ newkw )
+				keyword.set( newkw );
+			}
+		}
 		for( var i = 0; i < kws.length; i++ ){
 			var kw = kws[i]
+<<<<<<< HEAD
 			kwsliste.append( $('<input>').val( kw ).attr( 'id', i ).attr('class', 'lol89')
 				.change( function() {
 					var id = $( this ).attr('id');
@@ -210,6 +287,17 @@ function updateSidebar( img_id ) {
 			image.addKeywords( $( this ).val() );
 			
 		} ));
+=======
+			kwinput.append( $('<input>').val( kw.toString() )
+				.change( onKeywordChange( kw ) )
+			);
+		}
+		kwinput.append( $('<input>').attr( 'placeholder', "new keyword" )
+			.change( function() {
+				image.addKeywords( $( this ).val() );
+			} )
+		);
+>>>>>>> 88d502358ab7d3df341c46c57ccb56dceefb7f2f
 		console.log(image.getKeywords().toString());
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),
