@@ -157,18 +157,7 @@ function Image( id, metadata ) {
 		var newkws = setKeywords( arguments );
 		var url = "meta/:"+ this.id +"/?add="+ newkws.toString();
 		console.log( "POST: "+ url );
-<<<<<<< HEAD
-		$.post( url, function( data, status, xhr ) {
-				//alert( data +" "+ status );
-		});
-	}
-
-	this.setKeyword = function( id, value ) {
-		_xpkeywords[id] = value;
-		console.log( value );
-=======
 		$.post( url );
->>>>>>> 88d502358ab7d3df341c46c57ccb56dceefb7f2f
 	}
 
 	this.removeKeywords = function( keywords ) {
@@ -271,33 +260,20 @@ function updateSidebar( img_id ) {
 		}
 		for( var i = 0; i < kws.length; i++ ){
 			var kw = kws[i]
-<<<<<<< HEAD
-			kwsliste.append( $('<input>').val( kw ).attr( 'id', i ).attr('class', 'lol89')
-				.change( function() {
-					var id = $( this ).attr('id');
-					var val = $( this ).val();
-					image.setKeyword( id, val );
-				} )
-			);
-		}
-		
-		var kwsfelt = $( '<div>' );
-		kwsfelt.append(kwsliste);
-		kwsfelt.append( $('<input>').change( function() {
-			image.addKeywords( $( this ).val() );
-			
-		} ));
-=======
-			kwinput.append( $('<input>').val( kw.toString() )
+			kwsliste.append( $('<input>').val( kw.toString() )
+				.attr( 'id', i ).attr('class', 'lol89')
 				.change( onKeywordChange( kw ) )
 			);
 		}
-		kwinput.append( $('<input>').attr( 'placeholder', "new keyword" )
+
+		var kwsfelt = $( '<div>' );
+		kwsfelt.append( kwsliste );
+		kwsfelt.append( $('<input>').attr( 'placeholder', "new keyword" )
 			.change( function() {
 				image.addKeywords( $( this ).val() );
 			} )
 		);
->>>>>>> 88d502358ab7d3df341c46c57ccb56dceefb7f2f
+
 		console.log(image.getKeywords().toString());
 		container.append(
 			$( '<p>' ).text( "filepath: "+ image.path ),
