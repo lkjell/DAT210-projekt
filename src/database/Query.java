@@ -532,6 +532,7 @@ public class Query {
 		searchstring = sb.toString();
 		PreparedStatement ps = null;
 		ArrayList<Integer> al = new ArrayList<>();
+		log.info("SELECT DISTINCT files.file_id FROM files, relation, xp_tag WHERE "+ searchstring);
 		try {
 			ps = connection.prepareStatement(
 					"SELECT DISTINCT files.file_id FROM files, relation, xp_tag WHERE "+ searchstring );
@@ -541,6 +542,7 @@ public class Query {
 		} catch ( SQLException e ) { log.error( e, e );
 		} finally { closeStatements( ps ); }
 		return al;
+		
 	}
 
 	/*@SuppressWarnings("unused")

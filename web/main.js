@@ -1,11 +1,9 @@
 
 // Global variables
 var imageById = new Array();
-<<<<<<< HEAD
 var imgFiltered = new Array(); //bruke til å finne id
-=======
+
 var xpkeywords = new Array();
->>>>>>> origin/Merge-branche
 
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
