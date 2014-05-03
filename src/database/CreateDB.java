@@ -39,7 +39,8 @@ public class CreateDB {
 		try {
 			connection.createStatement().execute( "CREATE TABLE xp_tag("
 					+ "xp_tag_ID INT NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1, INCREMENT BY 1), PRIMARY KEY(xp_tag_ID),"
-					+ "tag VARCHAR(255) constraint tag_not_null NOT NULL constraint tag_unique UNIQUE" + ")" );
+					+ "tag VARCHAR(255) constraint tag_not_null NOT NULL" + ")" );
+//					+ "tag VARCHAR(255) constraint tag_not_null NOT NULL constraint tag_unique UNIQUE" + ")" );
 			System.out.println( "xp_tag table created" );
 		} catch (Exception e) {
 			String msg = e.getMessage();

@@ -2,6 +2,7 @@ package database;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,9 +13,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -39,13 +43,14 @@ public class Query {
 	// Table: relation [ file_id, xp_tag_id ]
 	private static final String SQL_GET_RELATION = "SELECT * from relation WHERE file_id = ? AND xp_tag_id = ?";
 	private static final String SQL_ADD_RELATION = "INSERT INTO relation(file_id, xp_tag_id) VALUES(?,?)";
-//	private static final String SQL_REMKW = "DELETE FROM relation WHERE file_ID = %s AND xp_tag_ID = %s";
+	private static final String SQL_REMKW = "DELETE FROM relation WHERE file_id = ? "
+			+ "AND xp_tag_id = (SELECT xp_tag_id FROM xp_tag WHERE tag = ?)";
 	
 	// Table: xp_tag [ xp_tag_id, tag ]
 	private static final String SQL_GET_KEYWORDS = "SELECT xp_tag.tag FROM relation, xp_tag WHERE relation.file_id = ? AND relation.xp_tag_id = xp_tag.xp_tag_id";
 	private static final String SQL_GET_KEYWORD = "SELECT * FROM xp_tag WHERE tag = ?";
 	private static final String SQL_ADD_KEYWORD = "INSERT INTO xp_tag(tag) VALUES(?)";
-	private static final String SQL_REMOVE_KEYWORD = "DELETE FROM xp_tag WHERE tag = ?";
+	private static final String SQL_DELETE_KEYWORD = "DELETE FROM xp_tag WHERE tag = ?";
 
 	private static final String SELECT_ALL_FILES = "select * from files";
 	private static final String SELECT_ALL_RELATIONS = "select * from relation";
@@ -249,48 +254,45 @@ public class Query {
 	 */
 	private int addFile( PreparedStatement psSelect, PreparedStatement psInsert, File file, String path ) {
 		int updated = 0;
-		BufferedImage bi;
+		BufferedImage img = null;
+		FileInputStream is;
+		ImageInputStream iis;
+		Iterator<ImageReader> i;
 		try {
-			bi = ImageIO.read( file );
-			psInsert.setShort( 2, (short) bi.getWidth() );
-			psInsert.setShort( 3, (short) bi.getHeight() );
+			is = new FileInputStream( file );
+			iis = ImageIO.createImageInputStream( is ); }
+		catch( IOException e ) { log.error( e, e ); return 0; }
+		i = ImageIO.getImageReaders( iis );
+		while( i.hasNext() ) {
+			ImageReader r = i.next();
+			try {
+				r.setInput( iis );
+				img = r.read( 0 );
+				break;
+			} catch( IOException e ) { img = null; }
 		}
-		catch (IOException e) {
-			log.warn( "could not read image dimensions from: " + path );
-			log.error( e, e );
+		if( img != null ) {
+			try {
+				psInsert.setShort( 2, (short) img.getWidth() );
+				psInsert.setShort( 3, (short) img.getHeight() );
+			} catch( SQLException e ) { log.error( e, e ); return 0; }
+		} else {
+			log.error( "Could not read image dimensions from: "+ path );
 			try {
 				psInsert.setNull( 2, Types.SMALLINT );
 				psInsert.setNull( 3, Types.SMALLINT );
-			} catch (SQLException e1) { log.error( e1 ); return 0; }
-		} catch ( SQLException e ) { log.error( e, e ); return 0; }
+			} catch ( SQLException e ) { log.error( e, e ); return 0; }
+		}
 		try {
 			psSelect.setString( 1, path );
 			psInsert.setString( 1, path );
 			int id = insertIfNotExist( psSelect, psInsert );
-			String[] keywords = FileMetadataUtil.getXPKeywords( path );
+			String[] keywords = FileMetadataUtil.getXPKeywords( is, path );
 			updated += addKeywords( id, keywords );
 			log.info( "New file: "+ id +" - "+ path +( keywords.length > 0 ?(
-					"\n\tTags: "+ join( "; ", (Object[]) keywords )) : "" ));
+					"\n\tTags: "+ join( "; ", keywords )) : "" ));
 		} catch( SQLException e ) { log.error( e, e ); return updated; }
 		return updated; // updated rows in db
-	}
-
-	/**
-	 * Joins one or more strings into one string with a delimiter.
-	 * 
-	 * @param delimiter The char that delimits the Strings.
-	 * @param objects The strings to join.
-	 * @return A string with all the strings delimited by the delimiter.
-	 */
-	private String join( String delimiter, Object...objects ) {
-		StringBuilder joined = new StringBuilder();
-		boolean first = true;
-		for( Object obj : objects ) {
-			if( first ) { first = false; }
-			else { joined.append( delimiter ); }
-			joined.append( obj.toString() );
-		}
-		return joined.toString();
 	}
 
 	/**
@@ -323,7 +325,7 @@ public class Query {
 	 * @see addFilesRegex
 	 * @see removeFiles
 	 */
-	public void updateFile( int fileId, String path ) { 
+	public void updateFile( int fileId, String path ) {
 		PreparedStatement ps = null;
 		try {
 			ps = connection.prepareStatement( SQL_SET_PATH ,
@@ -354,11 +356,12 @@ public class Query {
 	}
 
 	/**
-	 *Exif:Microsoft:XPKeywords.
-	 *Prompts database for all keywords associated with given file ID.
-	 *@return the number of table updates in database
-	 *@see addKeywords
-	 *@see removeKeywords
+	 * Exif:Microsoft:XPKeywords.
+	 * Prompts database for all keywords associated with given file ID.
+	 * @return the number of table updates in database
+	 * @see addKeywords
+	 * @see setKeywords
+	 * @see removeKeywords
 	 */
 	public String[] getKeywords( int fileId ) {
 		PreparedStatement ps = null;
@@ -379,8 +382,8 @@ public class Query {
 	 * @param keywords The keyword to be added.
 	 * @return The amount of updates to the database(
 	 * @see getKeywords
+	 * @see setKeywords
 	 * @see removeKeywords
-	 * 
 	 */
 	public int addKeywords( int fileId, String...keywords ) {
 		int updated = 0;
@@ -415,27 +418,73 @@ public class Query {
 	}
 
 	/**
-	 * Removes the specified (one or more) keywords from the database.
-	 * @param keywords The keyword to remove
-	 * @return The number of database updates as an int.
-	 * @see getKeywords
+	 * Changes the keyword in database. This will affect all files pointing to this keyword.
+	 * @return number of rows in database updated
 	 * @see addKeywords
+	 * @see getKeywords
+	 * @see removeKeywords
 	 */
-	public int removeKeywords( String...keywords ) { //SQL injection sensitive!
+	public int setKeyword( String oldkw, String newkw ) {
+		PreparedStatement ps = null;
+		int updated = 0;
+		try {
+			ps = connection.prepareStatement( "UPDATE xp_tag SET tag = ? WHERE tag = ?" );
+			log.info( "tag '"+ oldkw +"' changing to '"+ newkw +"'" );
+			updated = exeUpdate( ps, newkw, oldkw );
+			if( updated != 0 ) log.info( "tag '"+ oldkw +"' changed to '"+ newkw +"'" );
+		}
+		catch ( SQLException e ) { log.error( e, e ); }
+		finally { closeStatements( ps ); }
+		return updated;
+	}
+	
+	public int removeKeywords( int fileId, String...keywords ) {
 		int removed = 0;
 		PreparedStatement ps = null;
 		try {
-			ps = connection.prepareStatement( SQL_REMOVE_KEYWORD ,
+			ps = connection.prepareStatement( SQL_REMKW );
+			for( String kw : keywords ) {
+				ps.setInt( 1, fileId );
+				ps.setString( 2, kw );
+				removed += ps.executeUpdate();
+				log.debug( "removed tag '"+ kw +"' from file "+ fileId );
+			}
+//			String kw = join( ";", getKeywords( fileId ));
+//			if( FileMetadataUtil.writeXPKeywords( getFile( fileId ), kw ) )
+//				log.debug( "removed tags from file. Remaining: "+ kw );
+			return removed;
+		} catch ( SQLException e ) { log.error( e, e ); return removed; }
+		finally { closeStatements( ps ); }
+	}
+	
+	/**
+	 * Deletes the specified (one or more) keywords from the database.
+	 * @param keywords The keyword to delete
+	 * @return The number of database updates as an int.
+	 * @see addKeywords
+	 * @see getKeywords
+	 * @see setKeywords
+	 */
+ 	public int deleteKeywords( String...keywords ) {
+		int removed = 0;
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement( SQL_DELETE_KEYWORD ,
 					PreparedStatement.RETURN_GENERATED_KEYS );
 			for( String kw : keywords ) {
 				ps.setString( 1, kw );
 				removed += ps.executeUpdate();
+				log.debug( "deleted tag '"+ kw +"' from database" );
 			}
 			return removed;
 		} catch ( SQLException e ) { log.error( e, e ); return removed; }
 		finally { closeStatements( ps ); }
 	}
 
+ 	public boolean isSynched( int fileId ) {
+ 		return false;
+ 	}
+ 	
 	/**
 	 * @return short[] An array or length 2 containing width and height respectively
 	 */
@@ -517,6 +566,27 @@ public class Query {
 		return a;
 	}*/
 
+	/**
+	 * Joins one or more strings into one string with a delimiter.
+	 * 
+	 * @param delimiter The char that delimits the Strings.
+	 * @param objects The strings to join.
+	 * @return A string with all the strings delimited by the delimiter.
+	 */
+	private String join( String delimiter, String...strings ) {
+		return join( delimiter, (Object[]) strings );
+	}
+	private String join( String delimiter, Object...objects ) {
+		StringBuilder joined = new StringBuilder();
+		boolean first = true;
+		for( Object obj : objects ) {
+			if( first ) { first = false; }
+			else { joined.append( delimiter ); }
+			joined.append( obj.toString() );
+		}
+		return joined.toString();
+	}
+	
 	private int insertIfNotExist( PreparedStatement psSelect, PreparedStatement psInsert ) throws SQLException {
 		int id = -1;
 		ResultSet rs = psSelect.executeQuery();
