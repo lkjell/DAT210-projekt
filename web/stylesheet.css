@@ -132,6 +132,28 @@
 	position: relative;
 	overflow:auto;
 }
+.leftpanel {
+	visibility: hidden;
+	position: fixed;
+	max-width: 200px;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index:101;
+	background-color: rgba(1,1,1, 0.5);
+}
+
+.rightpanel {
+	visibility: hidden;
+	position: fixed;
+	max-width: 200px;
+	top: 0; right: 0; width: 100%; height: 100%;
+	z-index:101;
+	background-color: rgba(1,1,1, 0.5);
+
+	
+}
+
+
+
 
 .largeImgPanel {
 	text-align: center;

@@ -52,6 +52,8 @@ $( function() { // When document is ready
 
 	$( '.largeImgPanel' ).dblclick( function() {
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
+		$('.leftpanel').css( 'visibility', 'hidden');
+		$('.rightpanel').css( 'visibility', 'hidden');
 	});
 
 	search( QueryString.filter, function( data, status, xhr ) { //success
@@ -163,6 +165,7 @@ function buildGrid( ids ) {
 	).click( function() {
 		updateSidebar( $( this ).attr( 'id' ));
 	}).dblclick( showLargeImagePanel );
+	
 }
 
 function updateSidebar( img_id ) {
@@ -245,8 +248,10 @@ function requestMetadata( file_id ) {
 function showLargeImagePanel() {
 	var imgSource = $( this ).find('img').attr('src');
 	var bildeId = $( this ).attr('id'); //gir ut id'en til bildet som ble klikket på
+	alert( bildeId );
 	//find funksjon på imgFiltered for å finne neste bilde eller forrige bilde
 	var index = imgFiltered.indexOf(bildeId); //finner ut hvor i lista bildet er, altså hvilket bildet man er på nå
+	alert( index );
 	// index +1 er det neste bilde
 	
 	var idNeste = imgFiltered[index+1];
@@ -254,6 +259,10 @@ function showLargeImagePanel() {
 	console.log(imgSource);
 	$('#largeImg').attr( 'src', imgSource );
 	$('.largeImgPanel').css( 'visibility', 'visible');
+	$('.leftpanel').css( 'visibility', 'visible');
+	$('.rightpanel').css( 'visibility', 'visible');
+	
+	
 	if(document.selection) document.selection.empty();
 	if(window.getSelection) window.getSelection().removeAllRanges();
 }
