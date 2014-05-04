@@ -137,7 +137,7 @@ $( function() { // When document is ready
 /* Constructor for Keyword objects
  * Keyword is a mutable String object
  */
-function Keyword( value ) {
+function Keyword( value, callback ) {
 
 	if( value == undefined )
 		console.error( "Keyword instanciated without arguments" );
@@ -150,6 +150,7 @@ function Keyword( value ) {
 		$.post( url, function() {
 			console.log( "keyword "+ oldvalue +" changed to "+ value );
 			_set( value );
+			callback( oldvalue );
 		});
 	}
 }
@@ -223,14 +224,14 @@ function Image( id, metadata ) {
 
 	this.getKeywords = function() { return _xpkeywords; }
 
-	this.addKeywords = function( keywords ) {
+	this.addKeywords = function( keywords, callback ) {
 		var newkws = setKeywords( arguments );
 		var url = "meta/:"+ this.id +"/?add="+ newkws.toString();
 		console.log( "POST: "+ url );
-		$.post( url );
+		$.post( url, callback );
 	}
 
-	this.removeKeywords = function( keywords ) {
+	this.removeKeywords = function( keywords, callback ) {
 		var list = new Array();
 		for( var i in arguments ) {
 			var kw = arguments[i];
@@ -248,7 +249,7 @@ function Image( id, metadata ) {
 		}
 		var url = "meta/:"+ this.id +"/?remove="+ list.toString();
 		console.log( "POST: "+ url );
-		$.post( url );
+		$.post( url, callback );
 	}
 
 	imageById[id] = this;
@@ -323,12 +324,16 @@ function updateSidebar( img_id ) {
 			return function() {
 				var newkw = $( this ).val();
 				if( newkw == "" ) {
-					image.removeKeywords( keyword.toString() );
+					image.removeKeywords( keyword.toString(), function() {
+						writeIt();
+					} );
 					return;
 				}
 				console.log( "edited input from "
 					+ keyword.toString() +" to "+ newkw )
-				keyword.set( newkw );
+				keyword.set( newkw, function() {
+					writeIt();
+				} );
 			}
 		}
 		for( var i = 0; i < kws.length; i++ ){
@@ -343,7 +348,9 @@ function updateSidebar( img_id ) {
 		kwsfelt.append( kwsliste );
 		kwsfelt.append( $('<input>').attr( 'placeholder', "new keyword" )
 			.change( function() {
-				image.addKeywords( $( this ).val() );
+				image.addKeywords( $( this ).val(), function() {
+					writeIt();
+				} );
 			} )
 		);
 
