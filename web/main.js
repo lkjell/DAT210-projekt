@@ -48,6 +48,7 @@ $( function() { // When document is ready
 		console.log( txt );
 		search( txt, function( data, status, xhr ) { //success
 			buildGrid( data );
+			imgFiltered = data;
 		}, function( xhr, status, error ) { // error
 			console.log( "id-list fetch at textbox update failed" );
 		});
