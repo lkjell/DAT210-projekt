@@ -2,6 +2,9 @@
 // Global variables
 var imageById = new Array();
 var imgFiltered = new Array(); //bruke til å finne id
+var bildeId;
+var indexImg;
+
 
 var xpkeywords = new Array();
 
@@ -51,23 +54,84 @@ $( function() { // When document is ready
 	});
 
 	$( '.images' ).sortable().disableSelection();
-
-	$( '.largeImgPanel' ).dblclick( function() {
+	$( '.largeImgPanel' ).click( function() {
 		$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
 		$('.leftpanel').css( 'visibility', 'hidden');
 		$('.rightpanel').css( 'visibility', 'hidden');
 	});
 
+	$( '.rightpanel' ).mouseenter(function() {
+	$('.rightpanel').css( 'background', 'rgba(1,1,1, 0.5)');
+	})
+
+	
+		$( '.leftpanel' ).mouseenter(function() {
+	$('.leftpanel').css( 'background', 'rgba(1,1,1, 0.5)');
+	}
+	)
+
+		
+	$( '.leftpanel' ).mouseleave(function() {
+	$('.leftpanel').css( 'background', 'transparent');
+	})
+	
+		$( '.rightpanel' ).mouseleave(function() {
+	$('.rightpanel').css( 'background', 'transparent');
+	})
+
+	
+	 
+	
+	
+	
+	$( '.leftpanel' ).click( function() {
+	indexImg = imgFiltered.indexOf(bildeId); 
+	var idForrige = imgFiltered[indexImg-1]; //Gir IDnavn til neste bilde. Ikke index
+	
+	if (indexImg-1<0){
+	$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
+		$('.leftpanel').css( 'visibility', 'hidden');
+		$('.rightpanel').css( 'visibility', 'hidden');
+	}
+	
+	bildeId = idForrige;
+	$('#largeImg').attr( 'src', "img/?img_id="+ bildeId );
+		
+	});	
+	
+	
+	$( '.rightpanel' ).click( function() {
+	indexImg = imgFiltered.indexOf(bildeId); 
+	var idNeste = imgFiltered[indexImg+1]; //Gir IDnavn til neste bilde. Ikke index
+	
+	if (indexImg+1==imgFiltered.length){
+	$( '.largeImgPanel' ).css( 'visibility', 'hidden' );
+		$('.leftpanel').css( 'visibility', 'hidden');
+		$('.rightpanel').css( 'visibility', 'hidden');
+	}
+
+	bildeId = idNeste;
+	$('#largeImg').attr( 'src', "img/?img_id="+ bildeId );
+	
+	
+
+		
+	});		
+
 
 	search( QueryString.filter, function( data, status, xhr ) { //success
 		$( '#searchtext' ).val( QueryString.filter );
 		buildGrid( data ); //data er liste med tall, brukes til filtrering
-		imgFiltered = data;
+		var array = new Array();
+		imgFiltered=data;
+
 	});
 
-	$( ".image" ).dblclick( showLargeImagePanel );
-	$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
+	//$( ".image" ).dblclick( showLargeImagePanel );
+	//$( ".pagecontainer" ).click(function() { $('.largeImgPanel').css('visibility', 'hidden'); });
 });
+
+
 
 /* Constructor for Keyword objects
  * Keyword is a mutable String object
@@ -292,24 +356,22 @@ function updateSidebar( img_id ) {
 	}
 }
 
+
 function showLargeImagePanel() {
-	var imgSource = $( this ).find('img').attr('src');
-	var bildeId = $( this ).attr('id'); //gir ut id'en til bildet som ble klikket på
-	alert( bildeId );
-	//find funksjon på imgFiltered for å finne neste bilde eller forrige bilde
-	var index = imgFiltered.indexOf(bildeId); //finner ut hvor i lista bildet er, altså hvilket bildet man er på nå
-	alert( index );
-	// index +1 er det neste bilde
+//------------------------------------------------------------------------------------------------------------
+	//var imgSource = $( this ).find('img').attr('src');
 	
-	var idNeste = imgFiltered[index+1];
-	var idForrige = imgFiltered[index+1]
-	console.log(imgSource);
-	$('#largeImg').attr( 'src', imgSource );
+	bildeId = parseInt($( this ).attr('id')); //gir ut id'en til bildet som ble klikket på
+
+	//console.log(imgSource);
+	$('#largeImg').attr( 'src', "img/?img_id="+ bildeId );
 	$('.largeImgPanel').css( 'visibility', 'visible');
 	$('.leftpanel').css( 'visibility', 'visible');
 	$('.rightpanel').css( 'visibility', 'visible');
-	
-	
+	$('.leftpanel').css( 'background', 'transparent');
+	$('.rightpanel').css( 'background', 'transparent');
+
+		
 	if(document.selection) document.selection.empty();
 	if(window.getSelection) window.getSelection().removeAllRanges();
 }
