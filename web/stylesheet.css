@@ -127,12 +127,9 @@
 }
 
 .right {
-	width:  600px auto;
-	height: 680px auto;
-	float:  right;
-	position: relative;
-
-	
+	max-width: 500px;
+	float:     right;
+	position:  relative;
 }
 .leftpanel {
 	visibility: hidden;
