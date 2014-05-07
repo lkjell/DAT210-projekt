@@ -33,7 +33,8 @@ public class MetaNetServer extends Server {
 	
 
 	//String imageDirectory = "C:/Users/andreas/Dropbox/Bilder/";
-	String imageDirectory = "C:/Users/Aumymx/Pictures/Wallpapers/";
+	//String imageDirectory = "C:/Users/Aumymx/Pictures/Wallpapers/";
+	String imageDirectory = "C:/Users/Public/Pictures/";
 
 	
  	public MetaNetServer( Config cnfg ) throws Exception {
