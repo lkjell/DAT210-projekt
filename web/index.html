@@ -1,10 +1,11 @@
-<!DOCTYPE=HTML>
+﻿<!DOCTYPE=HTML>
 
 <html>
 	<head>
 		<title>MetaNet</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" href="favicon.ico" />
 		<link type="text/css" rel="stylesheet" href="stylesheet.css" />
 		<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
 		<script type="text/javascript" src="jquery-ui-1.10.4.custom.min.js"></script>
@@ -12,33 +13,46 @@
 	</head>
 
 	<body>
+		<div class="leftpanel"></div>
+		<div class="rightpanel"></div>
+			
+		
+		<div class="largeImgPanel">
+			<img id="largeImg"/>
+
+		</div>
+		
+		
 
 		<div class="pagecontainer"><!--Div Container for å sentrere alt inni-->
 
 			<div class="header">
-				<ul class="toolbar">
-					<li>File</li>
-					<li>Edit</li>
-					<li>View</li>
-					<li>osv</li>
+				<ul id="sddm">
+				    <li><a href="#" 
+				        onmouseover="mopen('m1')" 
+				        onmouseout="mclosetime()">File</a>
+				        <div id="m1" 
+				            onmouseover="mcancelclosetime()" 
+				            onmouseout="mclosetime()">
+				        <form name="form1" action="" method="post" enctype="multipart/form-data">
+							<input type="file" name="userfile1">
+							<input type="submit" value="Upload">
+						</form>
+				        </div>
+				    </li>
+				    <li><a href="#">View</a></li>
+				    <li><a href="#">About</a></li>
 				</ul>
+			<div style="clear:both"></div>
 			</div>
 
 			<div class="body">
 				<div class="left"><!-- Left wrapper for filtersøk og bildevisning-->
 					<div class="filter">
-						<form id="filterForm">Filter: <input type="text" name="filter" disabled="disabled"></form>
+						Filter: <input id="searchtext" type="text" name="filter" />
 					</div>
 
 					<ul class="images">
-						<li class="image" id="1234792387"><img src="/fetchMe1.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792388"><img src="/fetchMe2.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792389"><img src="/fetchMe3.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792390"><img src="/fetchMe4.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792391"><img src="/fetchMe5.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792392"><img src="/fetchMe6.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792393"><img src="/fetchMe7.jpg" alt="Request did not succeed"></li>
-						<li class="image" id="1234792394"><img src="/fetchMe8.jpg" alt="Request did not succeed"></li>
 					</ul>
 				</div>
 
@@ -50,6 +64,7 @@
 
 			<div class="footer"></div>
 
+			
 		</div>
 
 	</body>

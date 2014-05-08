@@ -1,33 +1,47 @@
 package server;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 
 import org.ini4j.Ini;
-import org.ini4j.InvalidFileFormatException;
 
 public class Config {
 	
-	Ini ini;
-	Ini.Section section;
+	private Ini ini;
+	private Ini.Section section;
+	
+	public int port;
+	public String webDir;
+	public String webIndex;
 	
 	public Config( String filename ) {
 		ini = new Ini();
         try {
         	ini.load( new FileReader( filename ));
         	section = ini.get( "Main" );
-		} catch ( InvalidFileFormatException | FileNotFoundException e ) {
-			e.printStackTrace();
-		}
-        catch ( IOException e ) {}
+		} catch ( Exception e ) {}
+        
+        port     = getInt( "port", MetaNetServer.DEFAULT_PORT );
+        webDir   = getStr( "webDir", "./web" );
+        webIndex = getStr( "webIndex", "index.html" );
+	}
+
+	private String getStr( String key, String defaultValue ) {
+        try { return section.get( key ); }
+        catch ( Exception e ) {
+        	//TODO: Log error - cant find config.ini key <key>
+        	System.err.println( "Can't find config.ini key "+ key +" default value: "+ defaultValue );
+        	return defaultValue;
+        }
 	}
 	
-	public int getInt( String key ) {
-		return Integer.parseInt( section.get( key ));
+	private int getInt( String key, int defaultValue ) {
+        try { return Integer.parseInt( section.get( key )); }
+        catch ( Exception e ) {
+        	//TODO: Log error - cant find config.ini key <key>
+        	System.err.println( "Can't find config.ini key "+ key +" default value: "+ defaultValue );
+        	return defaultValue;
+        }
 	}
 	
-	public void setSection( String name ) {
-		section = ini.get( name );
-	}
+	//private void setSection( String name ) { section = ini.get( name ); }
 }
